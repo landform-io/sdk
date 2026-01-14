@@ -7,6 +7,7 @@ import type {
 	FormField,
 	WelcomeScreen,
 	ThankYouScreen,
+	CustomScreen,
 	ResponseAnswers,
 	FieldAnswer,
 	ScreenItem,
@@ -58,8 +59,10 @@ export interface UseFormReturn {
 	canGoBack: boolean;
 	canGoNext: boolean;
 	isOnWelcome: boolean;
+	isOnLanding: boolean;
 	isOnThankYou: boolean;
 	isOnField: boolean;
+	isOnCustomScreen: boolean;
 
 	// Actions
 	start: () => Promise<void>;
@@ -92,6 +95,7 @@ export function useForm(options: UseFormOptions): UseFormReturn {
 	const {
 		projectId,
 		content,
+		theme,
 		settings,
 		baseUrl = "",
 		initialAnswers = {},
@@ -177,21 +181,61 @@ export function useForm(options: UseFormOptions): UseFormReturn {
 	// Build sequence of screens/fields
 	const sequence = useMemo<ScreenItem[]>(() => {
 		const items: ScreenItem[] = [];
+		const landingTemplate = theme?.pageTemplates?.landing;
+		const shouldMergeFirstField = landingTemplate?.mergeFirstField && content.fields.length > 0;
+		const customScreens = content.customScreens || [];
 
-		for (const screen of content.welcomeScreens) {
-			items.push({ type: "welcome", screen });
+		// Helper to get custom screens positioned after a specific ref
+		const getCustomScreensAfter = (ref: string): CustomScreen[] => {
+			return customScreens.filter(
+				(cs) => typeof cs.position === "object" && cs.position.after === ref
+			);
+		};
+
+		// Add custom screens positioned at "start"
+		const startScreens = customScreens.filter((cs) => cs.position === "start");
+		for (const screen of startScreens) {
+			items.push({ type: "custom", screen });
 		}
 
-		content.fields.forEach((field, index) => {
-			items.push({ type: "field", field, index });
+		// Handle welcome screens
+		for (const screen of content.welcomeScreens) {
+			if (shouldMergeFirstField) {
+				// Create landing page that merges welcome screen with first field
+				items.push({ type: "landing", screen, field: content.fields[0] });
+			} else {
+				items.push({ type: "welcome", screen });
+			}
+
+			// Add custom screens positioned after this welcome screen
+			for (const cs of getCustomScreensAfter(screen.ref)) {
+				items.push({ type: "custom", screen: cs });
+			}
+		}
+
+		// Add fields (skip first field if merged into landing)
+		const startIndex = shouldMergeFirstField ? 1 : 0;
+		content.fields.slice(startIndex).forEach((field, index) => {
+			items.push({ type: "field", field, index: startIndex + index });
+
+			// Add custom screens positioned after this field
+			for (const cs of getCustomScreensAfter(field.ref)) {
+				items.push({ type: "custom", screen: cs });
+			}
 		});
+
+		// Add custom screens positioned at "end" (before thank you screens)
+		const endScreens = customScreens.filter((cs) => cs.position === "end");
+		for (const screen of endScreens) {
+			items.push({ type: "custom", screen });
+		}
 
 		for (const screen of content.thankYouScreens) {
 			items.push({ type: "thankYou", screen });
 		}
 
 		return items;
-	}, [content]);
+	}, [content, theme?.pageTemplates?.landing]);
 
 	// Current item
 	const currentItem = sequence[currentIndex] || null;
@@ -204,9 +248,11 @@ export function useForm(options: UseFormOptions): UseFormReturn {
 	const lastFieldIndex = firstFieldIndex + content.fields.length - 1;
 	const canGoBack = currentIndex > firstFieldIndex;
 	const canGoNext = currentIndex < sequence.length - 1;
-	const isOnWelcome = currentItem?.type === "welcome";
+	const isOnWelcome = currentItem?.type === "welcome" || currentItem?.type === "landing";
+	const isOnLanding = currentItem?.type === "landing";
 	const isOnThankYou = currentItem?.type === "thankYou";
 	const isOnField = currentItem?.type === "field";
+	const isOnCustomScreen = currentItem?.type === "custom";
 
 	// Start response
 	const start = useCallback(async () => {
@@ -218,7 +264,7 @@ export function useForm(options: UseFormOptions): UseFormReturn {
 			// Track start event
 			client.trackEvent({ event: "start", sessionId });
 
-			// Move past welcome screen if on one
+			// Move past welcome screen if on one (but not landing - landing handles its own next via field answer)
 			if (currentItem?.type === "welcome") {
 				setCurrentIndex((prev) => prev + 1);
 			}
@@ -229,9 +275,17 @@ export function useForm(options: UseFormOptions): UseFormReturn {
 
 	// Validate current field (pendingValue allows validating before state updates)
 	const validateCurrentWithValue = useCallback((pendingValue?: FieldAnswer): boolean => {
-		if (currentItem?.type !== "field") return true;
+		// Handle both regular fields and landing page with embedded field
+		let field: FormField | undefined;
+		if (currentItem?.type === "field") {
+			field = currentItem.field;
+		} else if (currentItem?.type === "landing") {
+			field = currentItem.field;
+		}
 
-		const field = currentItem.field;
+		if (!field) return true;
+
+		const fieldToValidate = field;
 		// Use pending value if provided, otherwise use state
 		const value = pendingValue !== undefined ? pendingValue : answers[field.ref];
 		const isValid = validateFieldValue(field, value);
@@ -290,6 +344,55 @@ export function useForm(options: UseFormOptions): UseFormReturn {
 
 	// Navigate next (pendingValue allows validation before state updates)
 	const next = useCallback(async (pendingValue?: FieldAnswer) => {
+		// Handle custom screens - just advance, no validation needed
+		if (currentItem?.type === "custom") {
+			setCurrentIndex((prev) => Math.min(prev + 1, sequence.length - 1));
+			return;
+		}
+
+		// Handle landing page with embedded field
+		if (currentItem?.type === "landing") {
+			const field = currentItem.field;
+
+			// Validate embedded field
+			const isValid = validateCurrentWithValue(pendingValue);
+			if (!isValid) {
+				return;
+			}
+
+			// Start response if not already started
+			if (!isStarted) {
+				try {
+					const result = await client.startResponse({ sessionId });
+					setResponseId(result.id);
+					setIsStarted(true);
+					client.trackEvent({ event: "start", sessionId });
+
+					// Save the first field answer
+					if (pendingValue !== undefined || answers[field.ref] !== undefined) {
+						const answersToSave = pendingValue !== undefined
+							? { [field.ref]: pendingValue }
+							: { [field.ref]: answers[field.ref] };
+
+						client.updateAnswers({
+							responseId: result.id,
+							sessionId,
+							answers: answersToSave,
+							lastFieldRef: field.ref,
+						}).catch((error) => {
+							onError?.(error as Error);
+						});
+					}
+				} catch (error) {
+					onError?.(error as Error);
+					return;
+				}
+			}
+
+			setCurrentIndex((prev) => Math.min(prev + 1, sequence.length - 1));
+			return;
+		}
+
 		// Validate current field if applicable
 		if (currentItem?.type === "field") {
 			const isValid = validateCurrentWithValue(pendingValue);
@@ -338,6 +441,7 @@ export function useForm(options: UseFormOptions): UseFormReturn {
 		onError,
 		validateCurrentWithValue,
 		submit,
+		isStarted,
 	]);
 
 	// Navigate previous
@@ -407,8 +511,10 @@ export function useForm(options: UseFormOptions): UseFormReturn {
 		canGoBack,
 		canGoNext,
 		isOnWelcome,
+		isOnLanding,
 		isOnThankYou,
 		isOnField,
+		isOnCustomScreen,
 
 		// Actions
 		start,

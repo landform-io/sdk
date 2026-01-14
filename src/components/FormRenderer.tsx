@@ -4,6 +4,8 @@ import { useTheme, useThemeContext } from "../hooks/useTheme";
 import { useScreenTransition } from "../hooks/useScreenTransition";
 import { WelcomeScreen } from "./screens/WelcomeScreen";
 import { ThankYouScreen } from "./screens/ThankYouScreen";
+import { LandingPage } from "./screens/LandingPage";
+import { CustomScreenRenderer } from "./screens/CustomScreenRenderer";
 import { FieldRenderer } from "./fields/FieldRenderer";
 import { NavigationControls } from "./navigation/NavigationControls";
 import { ProgressBar } from "./navigation/ProgressBar";
@@ -55,6 +57,7 @@ function FormRendererInner({ className, theme, turnstileSiteKey }: FormRendererI
 		answers,
 		errors,
 		setAnswer,
+		progress,
 	} = useFormContext();
 
 	const { backgroundStyle } = useTheme({ theme });
@@ -243,6 +246,19 @@ function FormRendererInner({ className, theme, turnstileSiteKey }: FormRendererI
 						<WelcomeScreen screen={currentItem.screen} onStart={start} />
 					)}
 
+					{currentItem.type === "landing" && theme?.pageTemplates?.landing && (
+						<LandingPage
+							screen={currentItem.screen}
+							field={currentItem.field}
+							template={theme.pageTemplates.landing}
+							theme={theme}
+							value={answers[currentItem.field.ref]}
+							error={errors[currentItem.field.ref] || null}
+							onFieldAnswer={setAnswer}
+							onNext={next}
+						/>
+					)}
+
 					{currentItem.type === "field" && (
 						<FieldRenderer
 							field={currentItem.field}
@@ -254,6 +270,15 @@ function FormRendererInner({ className, theme, turnstileSiteKey }: FormRendererI
 							showQuestionNumber={settings.showQuestionNumber}
 							showKeyHints={settings.showKeyHintOnChoices}
 							systemMessages={settings.systemMessages}
+						/>
+					)}
+
+					{currentItem.type === "custom" && (
+						<CustomScreenRenderer
+							screen={currentItem.screen}
+							theme={theme}
+							progress={progress / 100}
+							onNext={next}
 						/>
 					)}
 

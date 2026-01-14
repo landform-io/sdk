@@ -1130,6 +1130,650 @@ export function generateVariantStyles(): string {
 }
 
 /**
+ * Generate landing page styles
+ * For Wisey-style landing pages with header, split layout, and terms
+ */
+export function generateLandingPageStyles(): string {
+	return `
+/* ============================================================================
+   Landing Page Styles
+   ============================================================================ */
+
+.lf-landing-page {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	background: var(--lf-color-background);
+}
+
+/* ---- Landing Header ---- */
+.lf-landing-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 1.5rem 3rem;
+	position: relative;
+	z-index: 10;
+}
+
+.lf-landing-header-left {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+.lf-landing-header-right {
+	display: flex;
+	align-items: center;
+	gap: 1.5rem;
+}
+
+.lf-landing-logo {
+	height: 32px;
+	width: auto;
+}
+
+.lf-landing-brand {
+	font-weight: 700;
+	font-size: 1.25rem;
+	color: var(--lf-color-question);
+}
+
+.lf-landing-header-link {
+	color: var(--lf-color-primary);
+	text-decoration: none;
+	font-weight: 500;
+	font-size: 0.9375rem;
+	transition: opacity 0.2s;
+}
+
+.lf-landing-header-link:hover {
+	opacity: 0.8;
+}
+
+.lf-landing-header-link-button {
+	background: var(--lf-color-primary);
+	color: var(--lf-color-button-text);
+	padding: 0.5rem 1rem;
+	border-radius: var(--lf-border-radius);
+}
+
+/* ---- Landing Main Content ---- */
+.lf-landing-main {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	padding: 2rem 3rem 3rem;
+	gap: 4rem;
+}
+
+/* ---- Split Layouts ---- */
+.lf-landing-split-right .lf-landing-main {
+	flex-direction: row;
+}
+
+.lf-landing-split-left .lf-landing-main {
+	flex-direction: row-reverse;
+}
+
+.lf-landing-centered .lf-landing-main {
+	flex-direction: column;
+	text-align: center;
+	justify-content: center;
+}
+
+/* ---- Content Side ---- */
+.lf-landing-content {
+	flex: 1;
+	max-width: 520px;
+}
+
+.lf-landing-centered .lf-landing-content {
+	max-width: 640px;
+}
+
+.lf-landing-title {
+	font-family: var(--lf-font-question);
+	font-size: 2.5rem;
+	font-weight: 800;
+	line-height: 1.15;
+	color: var(--lf-color-question);
+	margin: 0 0 1rem;
+	text-transform: uppercase;
+}
+
+.lf-landing-subtitle {
+	font-family: var(--lf-font-answer);
+	font-size: 0.875rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--lf-color-question);
+	margin: 0 0 2rem;
+	opacity: 0.9;
+}
+
+.lf-landing-description {
+	font-family: var(--lf-font-answer);
+	font-size: 1.125rem;
+	color: var(--lf-color-answer);
+	margin: 0 0 2rem;
+	line-height: 1.6;
+}
+
+/* ---- Landing Field ---- */
+.lf-landing-field {
+	margin-bottom: 1.5rem;
+}
+
+.lf-landing-field-title {
+	font-family: var(--lf-font-answer);
+	font-size: 1rem;
+	font-weight: 500;
+	color: var(--lf-color-question);
+	margin: 0 0 1rem;
+}
+
+.lf-landing-choices {
+	display: flex;
+	gap: 1rem;
+}
+
+.lf-landing-choices-row {
+	flex-direction: row;
+}
+
+.lf-landing-choices-column {
+	flex-direction: column;
+}
+
+.lf-landing-choice-btn {
+	padding: 0.875rem 2rem;
+	border: none;
+	border-radius: var(--lf-border-radius);
+	font-family: var(--lf-font-button);
+	font-size: 1rem;
+	font-weight: 600;
+	color: white;
+	cursor: pointer;
+	transition: transform 0.15s, filter 0.15s;
+	min-width: 120px;
+}
+
+.lf-landing-choice-btn:hover {
+	transform: translateY(-2px);
+	filter: brightness(1.05);
+}
+
+.lf-landing-choice-btn:active {
+	transform: translateY(0);
+}
+
+/* ---- Landing Start Button ---- */
+.lf-landing-start-btn {
+	margin-bottom: 1.5rem;
+}
+
+/* ---- Terms Footer ---- */
+.lf-landing-terms {
+	font-family: var(--lf-font-answer);
+	font-size: 0.75rem;
+	color: var(--lf-color-answer);
+	opacity: 0.7;
+	line-height: 1.5;
+	margin: 0;
+	max-width: 420px;
+}
+
+.lf-landing-terms-link {
+	color: var(--lf-color-primary);
+	text-decoration: none;
+}
+
+.lf-landing-terms-link:hover {
+	text-decoration: underline;
+}
+
+/* ---- Side Images ---- */
+.lf-landing-side {
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+}
+
+.lf-landing-side-image {
+	max-width: 100%;
+	height: auto;
+	max-height: 450px;
+	object-fit: cover;
+}
+
+/* ---- Mobile Responsive ---- */
+@media (max-width: 900px) {
+	.lf-landing-header {
+		padding: 1rem 1.5rem;
+	}
+
+	.lf-landing-main {
+		flex-direction: column !important;
+		padding: 1.5rem;
+		gap: 2rem;
+	}
+
+	.lf-landing-content {
+		max-width: 100%;
+		text-align: center;
+	}
+
+	.lf-landing-title {
+		font-size: 1.75rem;
+	}
+
+	.lf-landing-choices {
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.lf-landing-choice-btn {
+		width: 100%;
+		max-width: 280px;
+	}
+
+	.lf-landing-side {
+		flex-direction: row;
+		justify-content: center;
+		gap: 1rem;
+	}
+
+	.lf-landing-side-image {
+		max-height: 200px;
+		max-width: 45%;
+	}
+
+	.lf-landing-terms {
+		text-align: center;
+		max-width: 100%;
+	}
+}
+`.trim();
+}
+
+/**
+ * Generate custom screen template styles
+ * For milestone, section, info, results-teaser, and CTA screens
+ */
+export function generateCustomScreenStyles(): string {
+	return `
+/* ============================================================================
+   Custom Screen Templates
+   ============================================================================ */
+
+/* ---- Base Custom Screen ---- */
+.lf-custom-screen {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	min-height: 100vh;
+	padding: var(--lf-spacing-container);
+}
+
+/* ---- Milestone Screen ---- */
+.lf-milestone-screen {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	min-height: 100vh;
+	padding: var(--lf-spacing-container);
+}
+
+.lf-milestone-icon {
+	margin-bottom: 1.5rem;
+}
+
+.lf-milestone-icon-emoji {
+	font-size: 4rem;
+	line-height: 1;
+}
+
+.lf-milestone-icon-image {
+	width: 80px;
+	height: 80px;
+	object-fit: contain;
+}
+
+.lf-milestone-title {
+	font-family: var(--lf-font-question);
+	font-size: calc(var(--lf-font-size-question) * 1.25);
+	font-weight: var(--lf-font-weight-question);
+	color: var(--lf-color-question);
+	margin: 0 0 0.75rem;
+}
+
+.lf-milestone-subtitle {
+	font-size: var(--lf-font-size-answer);
+	color: var(--lf-color-answer);
+	opacity: 0.8;
+	margin: 0 0 1.5rem;
+	max-width: 400px;
+}
+
+.lf-milestone-progress {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.75rem;
+	margin-bottom: 2rem;
+	width: 100%;
+	max-width: 300px;
+}
+
+.lf-milestone-progress-bar {
+	width: 100%;
+	height: 8px;
+	background: var(--lf-color-progress-bg);
+	border-radius: var(--lf-border-radius);
+	overflow: hidden;
+}
+
+.lf-milestone-progress-fill {
+	height: 100%;
+	background: var(--lf-color-progress-fill);
+	transition: width 0.5s ease-out;
+}
+
+.lf-milestone-progress-text {
+	font-size: 0.875rem;
+	color: var(--lf-color-answer);
+	opacity: 0.7;
+}
+
+.lf-milestone-auto-advance {
+	font-size: 0.875rem;
+	color: var(--lf-color-answer);
+	opacity: 0.6;
+	margin-top: 1.5rem;
+	animation: lf-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes lf-pulse {
+	0%, 100% { opacity: 0.4; }
+	50% { opacity: 0.8; }
+}
+
+/* ---- Section Screen ---- */
+.lf-section-screen {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	min-height: 100vh;
+	padding: var(--lf-spacing-container);
+	position: relative;
+}
+
+.lf-section-overlay {
+	position: absolute;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.4);
+	z-index: 1;
+}
+
+.lf-section-content {
+	position: relative;
+	z-index: 2;
+	max-width: 600px;
+}
+
+.lf-section-title {
+	font-family: var(--lf-font-question);
+	font-size: calc(var(--lf-font-size-question) * 1.5);
+	font-weight: var(--lf-font-weight-question);
+	color: var(--lf-color-question);
+	margin: 0 0 1rem;
+}
+
+.lf-section-screen[style*="background-image"] .lf-section-title {
+	color: white;
+	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.lf-section-description {
+	font-size: 1.125rem;
+	color: var(--lf-color-answer);
+	opacity: 0.9;
+	margin: 0 0 2rem;
+	line-height: 1.6;
+}
+
+.lf-section-screen[style*="background-image"] .lf-section-description {
+	color: white;
+	opacity: 0.9;
+}
+
+/* ---- Info Screen ---- */
+.lf-info-screen {
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+}
+
+.lf-info-screen-top {
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	padding: var(--lf-spacing-container);
+}
+
+.lf-info-screen-background {
+	position: relative;
+}
+
+.lf-info-background {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+}
+
+.lf-info-overlay {
+	position: absolute;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.5);
+	z-index: 2;
+}
+
+.lf-info-screen-background .lf-info-content {
+	position: relative;
+	z-index: 3;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	min-height: 100vh;
+	padding: var(--lf-spacing-container);
+}
+
+.lf-info-screen-background .lf-info-title,
+.lf-info-screen-background .lf-info-description {
+	color: white;
+}
+
+.lf-info-split-layout {
+	display: flex;
+	flex: 1;
+	min-height: 100vh;
+}
+
+.lf-info-screen-left .lf-info-split-layout {
+	flex-direction: row;
+}
+
+.lf-info-screen-right .lf-info-split-layout {
+	flex-direction: row-reverse;
+}
+
+.lf-info-image-container {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+}
+
+.lf-info-image-top {
+	max-height: 300px;
+	margin-bottom: 2rem;
+}
+
+.lf-info-image-left,
+.lf-info-image-right {
+	max-width: 50%;
+}
+
+.lf-info-image {
+	max-width: 100%;
+	max-height: 100%;
+	object-fit: cover;
+}
+
+.lf-info-content {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	padding: var(--lf-spacing-container);
+	max-width: 600px;
+	margin: 0 auto;
+}
+
+.lf-info-title {
+	font-family: var(--lf-font-question);
+	font-size: calc(var(--lf-font-size-question) * 1.25);
+	font-weight: var(--lf-font-weight-question);
+	color: var(--lf-color-question);
+	margin: 0 0 1rem;
+}
+
+.lf-info-description {
+	font-size: var(--lf-font-size-answer);
+	color: var(--lf-color-answer);
+	opacity: 0.9;
+	margin: 0 0 2rem;
+	line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+	.lf-info-split-layout {
+		flex-direction: column !important;
+	}
+
+	.lf-info-image-left,
+	.lf-info-image-right {
+		max-width: 100%;
+		max-height: 250px;
+	}
+}
+
+/* ---- Results Teaser Screen ---- */
+.lf-results-teaser-screen {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	min-height: 100vh;
+	padding: var(--lf-spacing-container);
+}
+
+.lf-results-teaser-title {
+	font-family: var(--lf-font-question);
+	font-size: calc(var(--lf-font-size-question) * 1.25);
+	font-weight: var(--lf-font-weight-question);
+	color: var(--lf-color-question);
+	margin: 0 0 1rem;
+}
+
+.lf-results-teaser-text {
+	font-size: 1.125rem;
+	color: var(--lf-color-answer);
+	opacity: 0.9;
+	margin: 0 0 2rem;
+	line-height: 1.6;
+	max-width: 500px;
+}
+
+/* ---- CTA Screen ---- */
+.lf-cta-screen {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	min-height: 100vh;
+	padding: var(--lf-spacing-container);
+}
+
+.lf-cta-title {
+	font-family: var(--lf-font-question);
+	font-size: calc(var(--lf-font-size-question) * 1.25);
+	font-weight: var(--lf-font-weight-question);
+	color: var(--lf-color-question);
+	margin: 0 0 1rem;
+}
+
+.lf-cta-description {
+	font-size: 1.125rem;
+	color: var(--lf-color-answer);
+	opacity: 0.9;
+	margin: 0 0 2rem;
+	line-height: 1.6;
+	max-width: 500px;
+}
+
+.lf-cta-buttons {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+}
+
+.lf-cta-primary-button {
+	min-width: 200px;
+}
+
+.lf-cta-secondary-button {
+	background: transparent;
+	color: var(--lf-color-answer);
+	border: 1px solid var(--lf-color-input-border);
+}
+
+.lf-cta-secondary-button:hover {
+	background: var(--lf-color-surface);
+	border-color: var(--lf-color-primary);
+}
+
+/* ---- Button Secondary Variant ---- */
+.lf-button-secondary {
+	background: transparent;
+	color: var(--lf-color-answer);
+	border: 1px solid var(--lf-color-input-border);
+}
+
+.lf-button-secondary:hover {
+	background: var(--lf-color-surface);
+	border-color: var(--lf-color-primary);
+}
+`.trim();
+}
+
+/**
  * Generate inline CSS string for SSR
  * Returns complete CSS that can be embedded in HTML
  */
@@ -1139,6 +1783,8 @@ export function generateThemeStyleTag(theme: FormTheme): string {
 	const transitionStyles = generateTransitionStyles();
 	const layoutStyles = generateLayoutStyles();
 	const variantStyles = generateVariantStyles();
+	const landingPageStyles = generateLandingPageStyles();
+	const customScreenStyles = generateCustomScreenStyles();
 
-	return `${cssVariables}\n\n${componentStyles}\n\n${transitionStyles}\n\n${layoutStyles}\n\n${variantStyles}`;
+	return `${cssVariables}\n\n${componentStyles}\n\n${transitionStyles}\n\n${layoutStyles}\n\n${variantStyles}\n\n${landingPageStyles}\n\n${customScreenStyles}`;
 }

@@ -15,6 +15,8 @@ export interface FormContent {
 	logic: LogicRule[];
 	variables: FormVariables;
 	hiddenFields: HiddenField[];
+	/** Custom screens inserted between fields */
+	customScreens?: CustomScreen[];
 }
 
 // ============================================================================
@@ -28,10 +30,14 @@ export interface WelcomeScreen {
 		description?: string;
 		buttonText?: string;
 		showButton: boolean;
+		/** Subtitle shown below main title (e.g., "5-MINUTE TEST") */
+		subtitle?: string;
 	};
 	attachment?: Attachment;
 	layout?: Layout;
 	position?: Position;
+	/** Multiple images for side content in split layouts */
+	sideImages?: Attachment[];
 }
 
 export interface ThankYouScreen {
@@ -728,6 +734,174 @@ export interface ThemeComponentVariants {
 	questionNumberStyle?: "none" | "inline" | "badge" | "circle";
 }
 
+// ============================================================================
+// Page Templates - Theme-controlled page structure
+// ============================================================================
+
+export interface ThemePageTemplates {
+	landing?: LandingPageTemplate;
+	questions?: QuestionPageTemplate;
+	completion?: CompletionPageTemplate;
+}
+
+export interface LandingPageTemplate {
+	/** Merge first field onto the landing page */
+	mergeFirstField: boolean;
+	/** Layout for the landing page */
+	layout: "centered" | "split-left" | "split-right" | "full-width";
+	/** Header configuration */
+	header?: {
+		enabled: boolean;
+		showLogo: boolean;
+		links?: HeaderLink[];
+	};
+	/** Side content (for split layouts) */
+	sideContent?: {
+		enabled: boolean;
+		position: "left" | "right";
+		/** Default images if content doesn't provide them */
+		defaultImages?: string[];
+		/** Gap between images */
+		gap?: string;
+		/** Image border radius */
+		borderRadius?: string;
+	};
+	/** Terms/legal footer */
+	termsFooter?: {
+		enabled: boolean;
+		/** Template with placeholders: {choices}, {termsLink}, {privacyLink}, {cookieLink} */
+		template?: string;
+		links?: {
+			terms?: string;
+			privacy?: string;
+			cookies?: string;
+			subscription?: string;
+		};
+	};
+	/** Choice button layout on landing */
+	choiceLayout?: "row" | "column";
+	/** Hide the default welcome screen button when first field is merged */
+	hideWelcomeButton?: boolean;
+}
+
+export interface HeaderLink {
+	label: string;
+	url: string;
+	style?: "text" | "button";
+}
+
+export interface QuestionPageTemplate {
+	/** Show question number */
+	showNumber: boolean;
+	/** Number style */
+	numberStyle?: "inline" | "badge" | "circle" | "arrow";
+	/** Animation between questions */
+	transition?: ScreenTransitionType;
+}
+
+export interface CompletionPageTemplate {
+	/** Layout for thank you screen */
+	layout: "centered" | "split-left" | "split-right";
+	/** Show share buttons */
+	showShareButtons?: boolean;
+	/** Show confetti animation */
+	showConfetti?: boolean;
+}
+
+// ============================================================================
+// Custom Screen Templates - SDK-provided, theme-configurable screens
+// ============================================================================
+
+/** Built-in screen template types provided by the SDK */
+export type ScreenTemplateType =
+	| "milestone"
+	| "section"
+	| "info"
+	| "results-teaser"
+	| "cta";
+
+/** Base interface for all custom screens */
+export interface CustomScreen {
+	ref: string;
+	type: "custom";
+	templateType: ScreenTemplateType;
+	/** Position in the form (after which field ref, or "start"/"end") */
+	position: { after: string } | "start" | "end";
+	/** Template-specific properties */
+	properties: CustomScreenProperties;
+}
+
+/** Union of all template property types */
+export type CustomScreenProperties =
+	| MilestoneScreenProperties
+	| SectionScreenProperties
+	| InfoScreenProperties
+	| ResultsTeaserProperties
+	| CTAScreenProperties;
+
+/** Milestone screen - celebrates progress */
+export interface MilestoneScreenProperties {
+	templateType: "milestone";
+	title: string;
+	subtitle?: string;
+	/** Show progress percentage */
+	showProgress?: boolean;
+	/** Custom icon (emoji or image URL) */
+	icon?: string;
+	/** Auto-advance after delay (ms), or 0 for manual */
+	autoAdvanceMs?: number;
+	buttonText?: string;
+}
+
+/** Section header screen */
+export interface SectionScreenProperties {
+	templateType: "section";
+	title: string;
+	description?: string;
+	/** Background image */
+	backgroundImage?: string;
+	buttonText?: string;
+}
+
+/** Info screen with image */
+export interface InfoScreenProperties {
+	templateType: "info";
+	title: string;
+	description?: string;
+	image?: string;
+	imagePosition?: "top" | "left" | "right" | "background";
+	buttonText?: string;
+}
+
+/** Results teaser screen */
+export interface ResultsTeaserProperties {
+	templateType: "results-teaser";
+	title: string;
+	/** Template with variable placeholders like {answer_q1} */
+	teaserText?: string;
+	buttonText?: string;
+}
+
+/** CTA interstitial screen */
+export interface CTAScreenProperties {
+	templateType: "cta";
+	title: string;
+	description?: string;
+	primaryButtonText: string;
+	primaryButtonUrl?: string;
+	secondaryButtonText?: string;
+	/** If true, secondary button continues form */
+	secondaryContinuesForm?: boolean;
+}
+
+/** Theme configuration for custom screen templates */
+export interface ThemeScreenTemplates {
+	/** Which template types are enabled for this theme */
+	enabled: ScreenTemplateType[];
+	/** Default styling overrides per template type */
+	defaults?: Partial<Record<ScreenTemplateType, Partial<CustomScreenProperties>>>;
+}
+
 export interface FormTheme {
 	id?: string;
 	name?: string;
@@ -748,6 +922,10 @@ export interface FormTheme {
 	componentVariants?: ThemeComponentVariants;
 	/** Screen transition configuration */
 	screenTransitions?: ThemeScreenTransitions;
+	/** Page template configuration */
+	pageTemplates?: ThemePageTemplates;
+	/** Custom screen templates available in this theme */
+	screenTemplates?: ThemeScreenTemplates;
 }
 
 // ============================================================================
@@ -903,5 +1081,7 @@ export interface FieldState {
 
 export type ScreenItem =
 	| { type: "welcome"; screen: WelcomeScreen }
+	| { type: "landing"; screen: WelcomeScreen; field: FormField }
 	| { type: "field"; field: FormField; index: number }
+	| { type: "custom"; screen: CustomScreen }
 	| { type: "thankYou"; screen: ThankYouScreen };
