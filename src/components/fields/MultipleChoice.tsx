@@ -29,7 +29,12 @@ export function MultipleChoice({
 	const theme = useThemeContext();
 	const selectedValues = (value as string[]) || [];
 	const { choices, allowMultipleSelection } = field.properties;
+
+	// Component variants
 	const isCardStyle = theme.componentVariants?.choiceStyle === "card";
+	const choiceLayout = theme.componentVariants?.choiceLayout || "single-column";
+	const choiceIndicator = theme.componentVariants?.choiceIndicator || "checkmark";
+	const choiceContainerMaxWidth = theme.componentVariants?.choiceContainerMaxWidth;
 
 	const handleChoiceClick = (choiceRef: string) => {
 		if (allowMultipleSelection) {
@@ -62,6 +67,78 @@ export function MultipleChoice({
 		}
 	}, [choices, showKeyHints, selectedValues]);
 
+	// Container styles based on layout
+	const containerStyle: React.CSSProperties = choiceLayout === "single-column"
+		? {
+				display: "flex",
+				flexDirection: "column",
+				gap: "var(--lf-spacing-option)",
+			}
+		: {
+				display: "grid",
+				gridTemplateColumns: choiceLayout === "two-column"
+					? "repeat(2, 1fr)"
+					: "repeat(auto-fit, minmax(160px, 1fr))",
+				gap: "var(--lf-spacing-option)",
+				maxWidth: choiceContainerMaxWidth || undefined,
+				margin: choiceContainerMaxWidth ? "0 auto" : undefined,
+			};
+
+	// Render indicator based on type
+	const renderIndicator = (isSelected: boolean) => {
+		if (choiceIndicator === "none") {
+			return null;
+		}
+
+		if (choiceIndicator === "arrow") {
+			return (
+				<span className="lf-choice-indicator">
+					<svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+						<circle cx="9" cy="9" r="9" fill={isSelected ? "#111113" : "white"} />
+						<path
+							d="M8 5.5L11.5 9L8 12.5"
+							stroke={isSelected ? "white" : "black"}
+							strokeWidth="2.5"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						/>
+					</svg>
+				</span>
+			);
+		}
+
+		if (choiceIndicator === "radio") {
+			return (
+				<span className="lf-choice-indicator">
+					<svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+						<circle cx="9" cy="9" r="8" stroke={isSelected ? "var(--lf-color-primary)" : "#E5E7EB"} strokeWidth="2" fill="none" />
+						{isSelected && <circle cx="9" cy="9" r="5" fill="var(--lf-color-primary)" />}
+					</svg>
+				</span>
+			);
+		}
+
+		// Default: checkmark
+		return (
+			<span className="lf-choice-indicator">
+				{isSelected && (
+					<svg
+						width="14"
+						height="14"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="3"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					>
+						<polyline points="20 6 9 17 4 12" />
+					</svg>
+				)}
+			</span>
+		);
+	};
+
 	return (
 		<div className="lf-field">
 			<QuestionHeader
@@ -76,13 +153,7 @@ export function MultipleChoice({
 				</p>
 			)}
 
-			<div
-				style={{
-					display: "flex",
-					flexDirection: "column",
-					gap: "var(--lf-spacing-option)",
-				}}
-			>
+			<div style={containerStyle}>
 				{choices.map((choice, index) => {
 					const isSelected = selectedValues.includes(choice.ref);
 
@@ -96,22 +167,7 @@ export function MultipleChoice({
 								className={`lf-choice-card ${isSelected ? "lf-choice-card-selected" : ""}`}
 							>
 								<span style={{ flex: 1 }}>{choice.label}</span>
-								<span className="lf-choice-indicator">
-									{isSelected && (
-										<svg
-											width="14"
-											height="14"
-											viewBox="0 0 24 24"
-											fill="none"
-											stroke="currentColor"
-											strokeWidth="3"
-											strokeLinecap="round"
-											strokeLinejoin="round"
-										>
-											<polyline points="20 6 9 17 4 12" />
-										</svg>
-									)}
-								</span>
+								{renderIndicator(isSelected)}
 							</button>
 						);
 					}

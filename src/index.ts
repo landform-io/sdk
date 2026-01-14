@@ -1,5 +1,5 @@
 // ============================================================================
-// @landform/sdk - Form Rendering SDK for Landform.io
+// @landform.io/sdk - Form Rendering SDK for Landform.io
 // ============================================================================
 
 export type {

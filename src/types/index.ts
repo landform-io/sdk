@@ -608,6 +608,17 @@ export interface ThemeComponentVariants {
 	headerLayout?: "none" | "centered-logo" | "left-logo";
 	/** Progress style override */
 	progressStyle?: "bar" | "dots" | "segments" | "percentage" | "fraction";
+
+	/** Choice layout - single column or grid */
+	choiceLayout?: "single-column" | "two-column" | "auto-grid";
+	/** Choice indicator icon type */
+	choiceIndicator?: "checkmark" | "arrow" | "radio" | "none";
+	/** Navigation visibility control */
+	navigationVisibility?: "always" | "hidden" | "auto-advance";
+	/** Main container max width (e.g., "600px") */
+	containerMaxWidth?: string;
+	/** Choice container max width (e.g., "375px") */
+	choiceContainerMaxWidth?: string;
 }
 
 export interface FormTheme {

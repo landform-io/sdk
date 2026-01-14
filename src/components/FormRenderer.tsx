@@ -194,7 +194,12 @@ function FormRendererInner({ className, theme, turnstileSiteKey }: FormRendererI
 			{/* Main Content */}
 			<div
 				className="lf-question-container"
-				style={!hasConsent ? { opacity: 0.3, pointerEvents: "none" } : undefined}
+				style={{
+					...(theme?.componentVariants?.containerMaxWidth && {
+						maxWidth: theme.componentVariants.containerMaxWidth,
+					}),
+					...(!hasConsent && { opacity: 0.3, pointerEvents: "none" }),
+				}}
 			>
 				{currentItem.type === "welcome" && (
 					<WelcomeScreen screen={currentItem.screen} onStart={start} />

@@ -536,16 +536,26 @@ export function generateComponentStyles(): string {
 	justify-content: center;
 	width: 24px;
 	height: 24px;
-	border-radius: 50%;
-	border: 2px solid var(--lf-color-input-border);
 	flex-shrink: 0;
 	transition: all var(--lf-transition-duration) var(--lf-transition-easing);
 }
 
-.lf-choice-card-selected .lf-choice-indicator {
+/* Checkmark indicator style (default) */
+.lf-choice-indicator-checkmark {
+	border-radius: 50%;
+	border: 2px solid var(--lf-color-input-border);
+}
+
+.lf-choice-card-selected .lf-choice-indicator-checkmark {
 	background-color: var(--lf-color-button-text);
 	border-color: var(--lf-color-button-text);
 	color: var(--lf-color-selected-bg);
+}
+
+/* Arrow indicator style - no border, SVG handles circle */
+.lf-choice-indicator svg {
+	width: 18px;
+	height: 18px;
 }
 
 /* ============================================================================

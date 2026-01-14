@@ -12,6 +12,12 @@ export function NavigationControls({ onNext, onPrevious }: NavigationControlsPro
 		useFormContext();
 	const theme = useThemeContext();
 
+	// Check navigation visibility - hide if "hidden" or "auto-advance"
+	const navVisibility = theme.componentVariants?.navigationVisibility || "always";
+	if (navVisibility === "hidden" || navVisibility === "auto-advance") {
+		return null;
+	}
+
 	const handleNext = () => (onNext ? onNext() : next());
 	const handlePrevious = () => (onPrevious ? onPrevious() : previous());
 
