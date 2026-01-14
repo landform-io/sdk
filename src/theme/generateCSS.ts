@@ -95,6 +95,11 @@ export function generateThemeCSS(theme: FormTheme): string {
 	/* Animations */
 	--lf-transition-duration: ${t.animations.transitionDuration};
 	--lf-transition-easing: ${t.animations.transitionEasing};
+
+	/* Screen Transitions */
+	--lf-screen-transition-duration: ${t.screenTransitions?.duration || "0.4s"};
+	--lf-screen-transition-easing: ${t.screenTransitions?.easing || "cubic-bezier(0.4, 0, 0.2, 1)"};
+	--lf-screen-stagger-delay: ${t.screenTransitions?.staggerDelay || "0.05s"};
 }
 `.trim();
 }
@@ -650,12 +655,490 @@ export function generateComponentStyles(): string {
 }
 
 /**
+ * Generate screen transition keyframes and classes
+ */
+export function generateTransitionStyles(): string {
+	return `
+/* ============================================================================
+   Screen Transitions
+   ============================================================================ */
+
+/* Screen wrapper */
+.lf-screen-wrapper {
+	position: relative;
+	width: 100%;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+}
+
+/* Base content state */
+.lf-screen-content {
+	will-change: transform, opacity;
+}
+
+/* Idle state */
+.lf-transition-idle {
+	opacity: 1;
+	transform: none;
+}
+
+/* ---- FADE ---- */
+.lf-transition-fade.lf-transition-exit {
+	animation: lf-fade-out var(--lf-screen-transition-duration) var(--lf-screen-transition-easing) forwards;
+}
+
+.lf-transition-fade.lf-transition-enter {
+	animation: lf-fade-in var(--lf-screen-transition-duration) var(--lf-screen-transition-easing) forwards;
+}
+
+@keyframes lf-fade-out {
+	from { opacity: 1; }
+	to { opacity: 0; }
+}
+
+@keyframes lf-fade-in {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+/* ---- SLIDE LEFT ---- */
+.lf-transition-slide-left.lf-transition-exit {
+	animation: lf-slide-left-out var(--lf-screen-transition-duration) var(--lf-screen-transition-easing) forwards;
+}
+
+.lf-transition-slide-left.lf-transition-enter {
+	animation: lf-slide-left-in var(--lf-screen-transition-duration) var(--lf-screen-transition-easing) forwards;
+}
+
+@keyframes lf-slide-left-out {
+	from { transform: translateX(0); opacity: 1; }
+	to { transform: translateX(-30px); opacity: 0; }
+}
+
+@keyframes lf-slide-left-in {
+	from { transform: translateX(30px); opacity: 0; }
+	to { transform: translateX(0); opacity: 1; }
+}
+
+/* ---- SLIDE RIGHT ---- */
+.lf-transition-slide-right.lf-transition-exit {
+	animation: lf-slide-right-out var(--lf-screen-transition-duration) var(--lf-screen-transition-easing) forwards;
+}
+
+.lf-transition-slide-right.lf-transition-enter {
+	animation: lf-slide-right-in var(--lf-screen-transition-duration) var(--lf-screen-transition-easing) forwards;
+}
+
+@keyframes lf-slide-right-out {
+	from { transform: translateX(0); opacity: 1; }
+	to { transform: translateX(30px); opacity: 0; }
+}
+
+@keyframes lf-slide-right-in {
+	from { transform: translateX(-30px); opacity: 0; }
+	to { transform: translateX(0); opacity: 1; }
+}
+
+/* ---- SLIDE UP ---- */
+.lf-transition-slide-up.lf-transition-exit {
+	animation: lf-slide-up-out var(--lf-screen-transition-duration) var(--lf-screen-transition-easing) forwards;
+}
+
+.lf-transition-slide-up.lf-transition-enter {
+	animation: lf-slide-up-in var(--lf-screen-transition-duration) var(--lf-screen-transition-easing) forwards;
+}
+
+@keyframes lf-slide-up-out {
+	from { transform: translateY(0); opacity: 1; }
+	to { transform: translateY(-20px); opacity: 0; }
+}
+
+@keyframes lf-slide-up-in {
+	from { transform: translateY(20px); opacity: 0; }
+	to { transform: translateY(0); opacity: 1; }
+}
+
+/* ---- SLIDE DOWN ---- */
+.lf-transition-slide-down.lf-transition-exit {
+	animation: lf-slide-down-out var(--lf-screen-transition-duration) var(--lf-screen-transition-easing) forwards;
+}
+
+.lf-transition-slide-down.lf-transition-enter {
+	animation: lf-slide-down-in var(--lf-screen-transition-duration) var(--lf-screen-transition-easing) forwards;
+}
+
+@keyframes lf-slide-down-out {
+	from { transform: translateY(0); opacity: 1; }
+	to { transform: translateY(20px); opacity: 0; }
+}
+
+@keyframes lf-slide-down-in {
+	from { transform: translateY(-20px); opacity: 0; }
+	to { transform: translateY(0); opacity: 1; }
+}
+
+/* ---- ZOOM IN ---- */
+.lf-transition-zoom-in.lf-transition-exit {
+	animation: lf-zoom-in-out var(--lf-screen-transition-duration) var(--lf-screen-transition-easing) forwards;
+}
+
+.lf-transition-zoom-in.lf-transition-enter {
+	animation: lf-zoom-in-in var(--lf-screen-transition-duration) var(--lf-screen-transition-easing) forwards;
+}
+
+@keyframes lf-zoom-in-out {
+	from { transform: scale(1); opacity: 1; }
+	to { transform: scale(1.05); opacity: 0; }
+}
+
+@keyframes lf-zoom-in-in {
+	from { transform: scale(0.95); opacity: 0; }
+	to { transform: scale(1); opacity: 1; }
+}
+
+/* ---- ZOOM OUT ---- */
+.lf-transition-zoom-out.lf-transition-exit {
+	animation: lf-zoom-out-out var(--lf-screen-transition-duration) var(--lf-screen-transition-easing) forwards;
+}
+
+.lf-transition-zoom-out.lf-transition-enter {
+	animation: lf-zoom-out-in var(--lf-screen-transition-duration) var(--lf-screen-transition-easing) forwards;
+}
+
+@keyframes lf-zoom-out-out {
+	from { transform: scale(1); opacity: 1; }
+	to { transform: scale(0.95); opacity: 0; }
+}
+
+@keyframes lf-zoom-out-in {
+	from { transform: scale(1.05); opacity: 0; }
+	to { transform: scale(1); opacity: 1; }
+}
+
+/* ---- BLUR FADE ---- */
+.lf-transition-blur-fade.lf-transition-exit {
+	animation: lf-blur-fade-out var(--lf-screen-transition-duration) var(--lf-screen-transition-easing) forwards;
+}
+
+.lf-transition-blur-fade.lf-transition-enter {
+	animation: lf-blur-fade-in var(--lf-screen-transition-duration) var(--lf-screen-transition-easing) forwards;
+}
+
+@keyframes lf-blur-fade-out {
+	from { filter: blur(0); opacity: 1; }
+	to { filter: blur(8px); opacity: 0; }
+}
+
+@keyframes lf-blur-fade-in {
+	from { filter: blur(8px); opacity: 0; }
+	to { filter: blur(0); opacity: 1; }
+}
+
+/* ---- STAGGER CHILDREN ---- */
+.lf-stagger-children > * {
+	opacity: 0;
+	animation: lf-stagger-in var(--lf-screen-transition-duration) var(--lf-screen-transition-easing) forwards;
+}
+
+.lf-stagger-children > *:nth-child(1) { animation-delay: 0s; }
+.lf-stagger-children > *:nth-child(2) { animation-delay: var(--lf-screen-stagger-delay); }
+.lf-stagger-children > *:nth-child(3) { animation-delay: calc(var(--lf-screen-stagger-delay) * 2); }
+.lf-stagger-children > *:nth-child(4) { animation-delay: calc(var(--lf-screen-stagger-delay) * 3); }
+.lf-stagger-children > *:nth-child(5) { animation-delay: calc(var(--lf-screen-stagger-delay) * 4); }
+.lf-stagger-children > *:nth-child(6) { animation-delay: calc(var(--lf-screen-stagger-delay) * 5); }
+
+@keyframes lf-stagger-in {
+	from { opacity: 0; transform: translateY(10px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+`.trim();
+}
+
+/**
+ * Generate layout template styles
+ */
+export function generateLayoutStyles(): string {
+	return `
+/* ============================================================================
+   Layout Templates
+   ============================================================================ */
+
+/* ---- DEFAULT LAYOUT ---- */
+.lf-layout-default {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+}
+
+.lf-layout-default .lf-question-container {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	padding: var(--lf-spacing-container);
+	max-width: 720px;
+	margin: 0 auto;
+	width: 100%;
+}
+
+/* ---- CENTERED LAYOUT ---- */
+.lf-layout-centered {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+.lf-layout-centered .lf-question-container {
+	max-width: 600px;
+	padding: var(--lf-spacing-container);
+	text-align: center;
+}
+
+/* ---- LEFT ALIGNED LAYOUT ---- */
+.lf-layout-left-aligned {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+.lf-layout-left-aligned .lf-question-container {
+	max-width: 720px;
+	padding: var(--lf-spacing-container);
+	padding-left: 10%;
+}
+
+@media (max-width: 768px) {
+	.lf-layout-left-aligned .lf-question-container {
+		padding-left: var(--lf-spacing-container);
+	}
+}
+
+/* ---- SPLIT LAYOUTS ---- */
+.lf-layout-split-left,
+.lf-layout-split-right {
+	min-height: 100vh;
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 768px) {
+	.lf-layout-split-left,
+	.lf-layout-split-right {
+		grid-template-columns: 1fr;
+	}
+
+	.lf-split-background {
+		display: none;
+	}
+}
+
+.lf-split-background {
+	background-size: cover;
+	background-position: center;
+}
+
+.lf-layout-split-left .lf-split-background {
+	order: 1;
+}
+
+.lf-layout-split-left .lf-split-content {
+	order: 2;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	padding: var(--lf-spacing-container);
+}
+
+.lf-layout-split-right .lf-split-background {
+	order: 2;
+}
+
+.lf-layout-split-right .lf-split-content {
+	order: 1;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	padding: var(--lf-spacing-container);
+}
+
+/* ---- CARD CENTER LAYOUT ---- */
+.lf-layout-card-center {
+	min-height: 100vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: var(--lf-spacing-container);
+}
+
+.lf-layout-card-center .lf-card {
+	background-color: var(--lf-color-surface);
+	border-radius: var(--lf-border-radius);
+	box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+	padding: 2.5rem;
+	max-width: 480px;
+	width: 100%;
+}
+
+/* ---- CARD BOTTOM LAYOUT ---- */
+.lf-layout-card-bottom {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+}
+
+.lf-layout-card-bottom .lf-card {
+	background-color: var(--lf-color-surface);
+	border-radius: var(--lf-border-radius) var(--lf-border-radius) 0 0;
+	box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.1);
+	padding: 2rem var(--lf-spacing-container);
+	max-width: 100%;
+}
+`.trim();
+}
+
+/**
+ * Generate input and button variant styles
+ */
+export function generateVariantStyles(): string {
+	return `
+/* ============================================================================
+   Input Style Variants
+   ============================================================================ */
+
+/* ---- UNDERLINE INPUT ---- */
+.lf-input-style-underline .lf-input {
+	background: transparent;
+	border: none;
+	border-bottom: 2px solid var(--lf-color-input-border);
+	border-radius: 0;
+	padding-left: 0;
+	padding-right: 0;
+}
+
+.lf-input-style-underline .lf-input:focus {
+	border-bottom-color: var(--lf-color-primary);
+}
+
+/* ---- FILLED INPUT ---- */
+.lf-input-style-filled .lf-input {
+	background: var(--lf-color-surface);
+	border: none;
+	border-bottom: 2px solid transparent;
+}
+
+.lf-input-style-filled .lf-input:focus {
+	border-bottom-color: var(--lf-color-primary);
+}
+
+/* ---- OUTLINED INPUT ---- */
+.lf-input-style-outlined .lf-input {
+	background: transparent;
+	border: 2px solid var(--lf-color-input-border);
+}
+
+.lf-input-style-outlined .lf-input:focus {
+	border-color: var(--lf-color-primary);
+}
+
+/* ============================================================================
+   Button Style Variants
+   ============================================================================ */
+
+/* ---- SOLID BUTTON (default) ---- */
+.lf-button-style-solid .lf-button {
+	background: var(--lf-color-button-bg);
+	color: var(--lf-color-button-text);
+	border: none;
+}
+
+/* ---- OUTLINE BUTTON ---- */
+.lf-button-style-outline .lf-button {
+	background: transparent;
+	color: var(--lf-color-primary);
+	border: 2px solid var(--lf-color-primary);
+}
+
+.lf-button-style-outline .lf-button:hover {
+	background: var(--lf-color-primary);
+	color: var(--lf-color-button-text);
+}
+
+/* ---- GHOST BUTTON ---- */
+.lf-button-style-ghost .lf-button {
+	background: transparent;
+	color: var(--lf-color-primary);
+	border: none;
+}
+
+.lf-button-style-ghost .lf-button:hover {
+	background: var(--lf-color-surface);
+}
+
+/* ---- GRADIENT BUTTON ---- */
+.lf-button-style-gradient .lf-button {
+	background: linear-gradient(135deg, var(--lf-color-primary), var(--lf-color-secondary));
+	color: var(--lf-color-button-text);
+	border: none;
+}
+
+.lf-button-style-gradient .lf-button:hover {
+	filter: brightness(1.1);
+}
+
+/* ============================================================================
+   Question Number Styles
+   ============================================================================ */
+
+.lf-question-number-inline {
+	display: inline;
+	margin-right: 0.5rem;
+	opacity: 0.6;
+}
+
+.lf-question-number-badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2rem;
+	height: 2rem;
+	margin-right: 0.75rem;
+	background: var(--lf-color-surface);
+	border-radius: var(--lf-border-radius);
+	font-size: 0.875rem;
+	font-weight: 600;
+}
+
+.lf-question-number-circle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	margin-right: 0.75rem;
+	background: var(--lf-color-primary);
+	color: var(--lf-color-button-text);
+	border-radius: 50%;
+	font-size: 1rem;
+	font-weight: 700;
+}
+`.trim();
+}
+
+/**
  * Generate inline CSS string for SSR
  * Returns complete CSS that can be embedded in HTML
  */
 export function generateThemeStyleTag(theme: FormTheme): string {
 	const cssVariables = generateThemeCSS(theme);
 	const componentStyles = generateComponentStyles();
+	const transitionStyles = generateTransitionStyles();
+	const layoutStyles = generateLayoutStyles();
+	const variantStyles = generateVariantStyles();
 
-	return `${cssVariables}\n\n${componentStyles}`;
+	return `${cssVariables}\n\n${componentStyles}\n\n${transitionStyles}\n\n${layoutStyles}\n\n${variantStyles}`;
 }

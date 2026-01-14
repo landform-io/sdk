@@ -568,6 +568,102 @@ export interface ThemeAnimations {
 	enableAnimations: boolean;
 }
 
+// ============================================================================
+// Screen Transitions
+// ============================================================================
+
+/**
+ * Screen transition animation types
+ */
+export type ScreenTransitionType =
+	| "none"
+	| "fade"
+	| "slide-left"
+	| "slide-right"
+	| "slide-up"
+	| "slide-down"
+	| "zoom-in"
+	| "zoom-out"
+	| "blur-fade";
+
+/**
+ * Configuration for screen-to-screen transitions
+ */
+export interface ThemeScreenTransitions {
+	/** Enable/disable screen transitions */
+	enabled: boolean;
+	/** Transition when moving forward */
+	enterTransition: ScreenTransitionType;
+	/** Transition when content exits */
+	exitTransition: ScreenTransitionType;
+	/** Duration of the transition (e.g., "0.4s", "400ms") */
+	duration: string;
+	/** CSS easing function (e.g., "ease-out", "cubic-bezier(0.4, 0, 0.2, 1)") */
+	easing: string;
+	/** Whether to stagger child element animations */
+	animateChildren?: boolean;
+	/** Delay between child animations (e.g., "0.05s") */
+	staggerDelay?: string;
+	/** Direction-specific transition overrides */
+	directionOverrides?: {
+		forward?: ScreenTransitionType;
+		backward?: ScreenTransitionType;
+	};
+}
+
+// ============================================================================
+// Layout Templates
+// ============================================================================
+
+/**
+ * Pre-defined layout templates for form rendering
+ */
+export type LayoutTemplate =
+	| "default"
+	| "centered"
+	| "left-aligned"
+	| "split-left"
+	| "split-right"
+	| "card-center"
+	| "card-bottom";
+
+/**
+ * Detailed layout configuration
+ */
+export interface ThemeLayout {
+	/** Base layout template */
+	template: LayoutTemplate;
+	/** Content alignment within the layout */
+	contentAlignment: "top" | "center" | "bottom";
+	/** Vertical padding distribution */
+	verticalPadding: "none" | "small" | "medium" | "large";
+	/** Background configuration for split layouts */
+	splitBackground?: {
+		/** Which side shows the background */
+		side: "left" | "right";
+		/** Width percentage (e.g., "40%", "50%") */
+		width: string;
+		/** Background content */
+		content: {
+			type: "image" | "gradient" | "color";
+			value: string;
+		};
+		/** Optional overlay color */
+		overlay?: string;
+	};
+	/** Card styling for card layouts */
+	cardStyle?: {
+		/** Card background color */
+		background: string;
+		/** Card shadow size */
+		shadow: "none" | "small" | "medium" | "large";
+		/** Card max width */
+		maxWidth: string;
+		/** Card padding */
+		padding: string;
+	};
+}
+
 export interface ThemeBackground {
 	type: "solid" | "gradient" | "image" | "video";
 	value: string;
@@ -619,6 +715,17 @@ export interface ThemeComponentVariants {
 	containerMaxWidth?: string;
 	/** Choice container max width (e.g., "375px") */
 	choiceContainerMaxWidth?: string;
+
+	/** Page layout template */
+	layout?: LayoutTemplate;
+	/** Full layout configuration (overrides layout if both set) */
+	layoutConfig?: ThemeLayout;
+	/** Input field style variant */
+	inputStyle?: "default" | "underline" | "filled" | "outlined";
+	/** Button style variant */
+	buttonStyle?: "solid" | "outline" | "ghost" | "gradient";
+	/** Question number display style */
+	questionNumberStyle?: "none" | "inline" | "badge" | "circle";
 }
 
 export interface FormTheme {
@@ -639,6 +746,8 @@ export interface FormTheme {
 	customCSS?: string;
 	customJS?: ThemeCustomJS;
 	componentVariants?: ThemeComponentVariants;
+	/** Screen transition configuration */
+	screenTransitions?: ThemeScreenTransitions;
 }
 
 // ============================================================================

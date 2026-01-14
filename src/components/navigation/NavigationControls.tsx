@@ -5,11 +5,16 @@ import { useThemeContext } from "../../hooks/useTheme";
 export interface NavigationControlsProps {
 	onNext?: () => void;
 	onPrevious?: () => void;
+	/** Disable all navigation (e.g., during transitions) */
+	disabled?: boolean;
 }
 
-export function NavigationControls({ onNext, onPrevious }: NavigationControlsProps) {
+export function NavigationControls({ onNext, onPrevious, disabled = false }: NavigationControlsProps) {
 	const { canGoBack, canGoNext, isSubmitting, next, previous, settings } =
 		useFormContext();
+
+	// Combined disabled state - from prop or submitting
+	const isDisabled = disabled || isSubmitting;
 	const theme = useThemeContext();
 
 	// Check navigation visibility - hide if "hidden" or "auto-advance"
@@ -34,7 +39,7 @@ export function NavigationControls({ onNext, onPrevious }: NavigationControlsPro
 					type="button"
 					className="lf-nav-btn-back"
 					onClick={handlePrevious}
-					disabled={!canGoBack}
+					disabled={!canGoBack || isDisabled}
 					aria-label="Previous question"
 				>
 					<svg
@@ -55,7 +60,7 @@ export function NavigationControls({ onNext, onPrevious }: NavigationControlsPro
 					type="button"
 					className="lf-nav-btn-next"
 					onClick={handleNext}
-					disabled={isSubmitting}
+					disabled={isDisabled}
 					aria-label="Next question"
 				>
 					Next
@@ -83,7 +88,7 @@ export function NavigationControls({ onNext, onPrevious }: NavigationControlsPro
 				type="button"
 				className="lf-navigation-button"
 				onClick={handlePrevious}
-				disabled={!canGoBack}
+				disabled={!canGoBack || isDisabled}
 				aria-label="Previous question"
 			>
 				<svg
@@ -104,7 +109,7 @@ export function NavigationControls({ onNext, onPrevious }: NavigationControlsPro
 				type="button"
 				className="lf-button"
 				onClick={handleNext}
-				disabled={isSubmitting}
+				disabled={isDisabled}
 			>
 				{confirmText}
 				<span
@@ -122,7 +127,7 @@ export function NavigationControls({ onNext, onPrevious }: NavigationControlsPro
 				type="button"
 				className="lf-navigation-button"
 				onClick={handleNext}
-				disabled={!canGoNext || isSubmitting}
+				disabled={!canGoNext || isDisabled}
 				aria-label="Next question"
 			>
 				<svg

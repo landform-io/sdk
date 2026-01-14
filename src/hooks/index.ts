@@ -9,3 +9,9 @@ export type { UseProgressOptions, UseProgressReturn, ProgressSegment } from "./u
 
 export { useTheme, useThemeContext, ThemeContext } from "./useTheme";
 export type { UseThemeOptions, UseThemeReturn } from "./useTheme";
+
+export { useScreenTransition } from "./useScreenTransition";
+export type {
+	UseScreenTransitionOptions,
+	UseScreenTransitionReturn,
+} from "./useScreenTransition";

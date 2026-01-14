@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FormProvider, useFormContext } from "./FormProvider";
 import { useTheme, useThemeContext } from "../hooks/useTheme";
+import { useScreenTransition } from "../hooks/useScreenTransition";
 import { WelcomeScreen } from "./screens/WelcomeScreen";
 import { ThankYouScreen } from "./screens/ThankYouScreen";
 import { FieldRenderer } from "./fields/FieldRenderer";
@@ -41,6 +42,7 @@ interface FormRendererInnerProps {
 function FormRendererInner({ className, theme, turnstileSiteKey }: FormRendererInnerProps) {
 	const {
 		currentItem,
+		currentIndex,
 		settings,
 		isStarted,
 		isCompleted,
@@ -56,6 +58,26 @@ function FormRendererInner({ className, theme, turnstileSiteKey }: FormRendererI
 	} = useFormContext();
 
 	const { backgroundStyle } = useTheme({ theme });
+
+	// Screen transitions
+	const { transitionClass, isTransitioning, transitionStyle, shouldStagger } =
+		useScreenTransition({
+			transitions: theme?.screenTransitions,
+			currentIndex,
+		});
+
+	// Get layout class from component variants
+	const layoutClass = theme?.componentVariants?.layout
+		? `lf-layout-${theme.componentVariants.layout}`
+		: "lf-layout-default";
+
+	// Get input/button style classes
+	const inputStyleClass = theme?.componentVariants?.inputStyle
+		? `lf-input-style-${theme.componentVariants.inputStyle}`
+		: "";
+	const buttonStyleClass = theme?.componentVariants?.buttonStyle
+		? `lf-button-style-${theme.componentVariants.buttonStyle}`
+		: "";
 
 	// Cookie consent state
 	const [showCookieConsent, setShowCookieConsent] = useState(false);
@@ -127,8 +149,19 @@ function FormRendererInner({ className, theme, turnstileSiteKey }: FormRendererI
 		);
 	}
 
+	// Combine all classes for the form container
+	const formClasses = [
+		"lf-form",
+		layoutClass,
+		inputStyleClass,
+		buttonStyleClass,
+		className || "",
+	]
+		.filter(Boolean)
+		.join(" ");
+
 	return (
-		<div className={`lf-form ${className || ""}`} style={backgroundStyle}>
+		<div className={formClasses} style={backgroundStyle}>
 			{/* Cookie Consent Banner */}
 			{showCookieConsent && (
 				<CookieConsent onAccept={handleCookieConsentAccept} />
@@ -191,42 +224,48 @@ function FormRendererInner({ className, theme, turnstileSiteKey }: FormRendererI
 			{/* Time to Complete */}
 			<TimeToComplete />
 
-			{/* Main Content */}
+			{/* Screen Wrapper with Transitions */}
 			<div
-				className="lf-question-container"
-				style={{
-					...(theme?.componentVariants?.containerMaxWidth && {
-						maxWidth: theme.componentVariants.containerMaxWidth,
-					}),
-					...(!hasConsent && { opacity: 0.3, pointerEvents: "none" }),
-				}}
+				className={`lf-screen-wrapper ${transitionClass}`}
+				style={transitionStyle}
 			>
-				{currentItem.type === "welcome" && (
-					<WelcomeScreen screen={currentItem.screen} onStart={start} />
-				)}
+				{/* Main Content */}
+				<div
+					className={`lf-question-container lf-screen-content ${shouldStagger ? "lf-stagger-children" : ""}`}
+					style={{
+						...(theme?.componentVariants?.containerMaxWidth && {
+							maxWidth: theme.componentVariants.containerMaxWidth,
+						}),
+						...(!hasConsent && { opacity: 0.3, pointerEvents: "none" }),
+					}}
+				>
+					{currentItem.type === "welcome" && (
+						<WelcomeScreen screen={currentItem.screen} onStart={start} />
+					)}
 
-				{currentItem.type === "field" && (
-					<FieldRenderer
-						field={currentItem.field}
-						value={answers[currentItem.field.ref]}
-						error={errors[currentItem.field.ref] || null}
-						onChange={(value) => setAnswer(currentItem.field.ref, value)}
-						onNext={next}
-						questionNumber={currentItem.index + 1}
-						showQuestionNumber={settings.showQuestionNumber}
-						showKeyHints={settings.showKeyHintOnChoices}
-						systemMessages={settings.systemMessages}
-					/>
-				)}
+					{currentItem.type === "field" && (
+						<FieldRenderer
+							field={currentItem.field}
+							value={answers[currentItem.field.ref]}
+							error={errors[currentItem.field.ref] || null}
+							onChange={(value) => setAnswer(currentItem.field.ref, value)}
+							onNext={next}
+							questionNumber={currentItem.index + 1}
+							showQuestionNumber={settings.showQuestionNumber}
+							showKeyHints={settings.showKeyHintOnChoices}
+							systemMessages={settings.systemMessages}
+						/>
+					)}
 
-				{currentItem.type === "thankYou" && (
-					<ThankYouScreen screen={currentItem.screen} />
-				)}
+					{currentItem.type === "thankYou" && (
+						<ThankYouScreen screen={currentItem.screen} />
+					)}
+				</div>
 			</div>
 
-			{/* Navigation */}
+			{/* Navigation - disabled during transitions */}
 			{!settings.hideNavigation && isStarted && currentItem.type === "field" && (
-				<NavigationControls />
+				<NavigationControls disabled={isTransitioning} />
 			)}
 
 			{/* Branding */}
