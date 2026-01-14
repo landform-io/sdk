@@ -1,0 +1,231 @@
+import React, { useState, useEffect } from "react";
+import { FormProvider, useFormContext } from "./FormProvider";
+import { useTheme, useThemeContext } from "../hooks/useTheme";
+import { WelcomeScreen } from "./screens/WelcomeScreen";
+import { ThankYouScreen } from "./screens/ThankYouScreen";
+import { FieldRenderer } from "./fields/FieldRenderer";
+import { NavigationControls } from "./navigation/NavigationControls";
+import { ProgressBar } from "./navigation/ProgressBar";
+import { TimeToComplete } from "./navigation/TimeToComplete";
+import { CookieConsent } from "./CookieConsent";
+import { Captcha } from "./Captcha";
+import { Branding } from "./layout/Branding";
+import { Header } from "./layout/Header";
+import { hasCookieConsent } from "../utils/storage";
+import type { UseFormOptions } from "../hooks/useForm";
+
+export interface FormRendererProps extends UseFormOptions {
+	className?: string;
+}
+
+export function FormRenderer(props: FormRendererProps) {
+	const { className, ...formOptions } = props;
+
+	return (
+		<FormProvider {...formOptions}>
+			<FormRendererInner
+				className={className}
+				theme={formOptions.theme}
+				turnstileSiteKey={formOptions.turnstileSiteKey}
+			/>
+		</FormProvider>
+	);
+}
+
+interface FormRendererInnerProps {
+	className?: string;
+	theme: UseFormOptions["theme"];
+	turnstileSiteKey?: string;
+}
+
+function FormRendererInner({ className, theme, turnstileSiteKey }: FormRendererInnerProps) {
+	const {
+		currentItem,
+		settings,
+		isStarted,
+		isCompleted,
+		isDuplicateSubmission,
+		showCaptcha,
+		setCaptchaToken,
+		submit,
+		start,
+		next,
+		answers,
+		errors,
+		setAnswer,
+	} = useFormContext();
+
+	const { backgroundStyle } = useTheme({ theme });
+
+	// Cookie consent state
+	const [showCookieConsent, setShowCookieConsent] = useState(false);
+	const [hasConsent, setHasConsent] = useState(true);
+
+	useEffect(() => {
+		if (settings.showCookieConsent && !hasCookieConsent()) {
+			setShowCookieConsent(true);
+			setHasConsent(false);
+		}
+	}, [settings.showCookieConsent]);
+
+	const handleCookieConsentAccept = () => {
+		setShowCookieConsent(false);
+		setHasConsent(true);
+	};
+
+	// Show duplicate submission message
+	if (isDuplicateSubmission) {
+		return (
+			<div className={`lf-form ${className || ""}`} style={backgroundStyle}>
+				<div className="lf-question-container">
+					<div className="lf-screen" style={{ textAlign: "center" }}>
+						<div
+							style={{
+								width: "80px",
+								height: "80px",
+								margin: "0 auto 1.5rem",
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+								backgroundColor: "var(--lf-color-primary)",
+								opacity: 0.1,
+								borderRadius: "50%",
+							}}
+						>
+							<svg
+								width="40"
+								height="40"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="var(--lf-color-primary)"
+								strokeWidth="2"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+							>
+								<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+								<polyline points="22 4 12 14.01 9 11.01" />
+							</svg>
+						</div>
+						<h1 className="lf-question-title" style={{ marginBottom: "0.75rem" }}>
+							You&apos;ve already submitted
+						</h1>
+						<p className="lf-question-description">
+							You have already submitted a response to this form.
+						</p>
+					</div>
+				</div>
+				<Branding />
+			</div>
+		);
+	}
+
+	if (!currentItem) {
+		return (
+			<div className={`lf-form ${className || ""}`}>
+				<div className="lf-screen">Loading...</div>
+			</div>
+		);
+	}
+
+	return (
+		<div className={`lf-form ${className || ""}`} style={backgroundStyle}>
+			{/* Cookie Consent Banner */}
+			{showCookieConsent && (
+				<CookieConsent onAccept={handleCookieConsentAccept} />
+			)}
+
+			{/* CAPTCHA Modal */}
+			{showCaptcha && turnstileSiteKey && (
+				<div
+					className="lf-captcha-modal"
+					style={{
+						position: "fixed",
+						inset: 0,
+						zIndex: 1000,
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "center",
+						backgroundColor: "rgba(0, 0, 0, 0.5)",
+					}}
+				>
+					<div
+						style={{
+							maxWidth: "400px",
+							margin: "1rem",
+							padding: "1.5rem",
+							backgroundColor: "var(--lf-color-surface, #fff)",
+							borderRadius: "var(--lf-border-radius, 8px)",
+							boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
+							textAlign: "center",
+						}}
+					>
+						<h2
+							className="lf-question-title"
+							style={{ fontSize: "1.25rem", marginBottom: "0.75rem" }}
+						>
+							Please verify you&apos;re human
+						</h2>
+						<p
+							className="lf-question-description"
+							style={{ marginBottom: "1rem", fontSize: "0.875rem", opacity: 0.7 }}
+						>
+							Complete the verification below to submit your response.
+						</p>
+						<Captcha
+							siteKey={turnstileSiteKey}
+							onVerify={(token) => {
+								setCaptchaToken(token);
+								submit();
+							}}
+						/>
+					</div>
+				</div>
+			)}
+
+			{/* Progress Bar */}
+			{isStarted && !isCompleted && <ProgressBar />}
+
+			{/* Header */}
+			{isStarted && !isCompleted && <Header />}
+
+			{/* Time to Complete */}
+			<TimeToComplete />
+
+			{/* Main Content */}
+			<div
+				className="lf-question-container"
+				style={!hasConsent ? { opacity: 0.3, pointerEvents: "none" } : undefined}
+			>
+				{currentItem.type === "welcome" && (
+					<WelcomeScreen screen={currentItem.screen} onStart={start} />
+				)}
+
+				{currentItem.type === "field" && (
+					<FieldRenderer
+						field={currentItem.field}
+						value={answers[currentItem.field.ref]}
+						error={errors[currentItem.field.ref] || null}
+						onChange={(value) => setAnswer(currentItem.field.ref, value)}
+						onNext={next}
+						questionNumber={currentItem.index + 1}
+						showQuestionNumber={settings.showQuestionNumber}
+						showKeyHints={settings.showKeyHintOnChoices}
+						systemMessages={settings.systemMessages}
+					/>
+				)}
+
+				{currentItem.type === "thankYou" && (
+					<ThankYouScreen screen={currentItem.screen} />
+				)}
+			</div>
+
+			{/* Navigation */}
+			{!settings.hideNavigation && isStarted && currentItem.type === "field" && (
+				<NavigationControls />
+			)}
+
+			{/* Branding */}
+			<Branding />
+		</div>
+	);
+}
