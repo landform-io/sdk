@@ -900,6 +900,72 @@ export interface ThemeScreenTemplates {
 	enabled: ScreenTemplateType[];
 	/** Default styling overrides per template type */
 	defaults?: Partial<Record<ScreenTemplateType, Partial<CustomScreenProperties>>>;
+	/** User-defined custom templates */
+	customTemplates?: CustomPageTemplate[];
+}
+
+// ============================================================================
+// User-Defined Custom Templates
+// ============================================================================
+
+/** Field types available for custom template configuration */
+export type CustomTemplateFieldType =
+	| "text"
+	| "textarea"
+	| "color"
+	| "image"
+	| "select"
+	| "boolean"
+	| "number";
+
+/** Custom template field definition */
+export interface CustomTemplateField {
+	/** Unique identifier for this field (used in {{fieldId}} placeholders) */
+	id: string;
+	/** Display label for the field */
+	label: string;
+	/** Field type */
+	type: CustomTemplateFieldType;
+	/** Default value for this field */
+	defaultValue?: string | boolean | number;
+	/** Placeholder text for text inputs */
+	placeholder?: string;
+	/** Options for select type fields */
+	options?: { label: string; value: string }[];
+	/** Whether this field is required */
+	required?: boolean;
+	/** Help text for this field */
+	description?: string;
+}
+
+/** User-defined custom page template */
+export interface CustomPageTemplate {
+	/** Unique identifier for this template */
+	id: string;
+	/** Display name for the template */
+	name: string;
+	/** Description of what this template is for */
+	description?: string;
+	/** HTML template with {{fieldId}} variable placeholders */
+	html: string;
+	/** CSS styles for the template */
+	css?: string;
+	/** Fields that can be configured when using this template */
+	fields: CustomTemplateField[];
+	/** Preview thumbnail URL */
+	thumbnail?: string;
+}
+
+/** Screen instance using a user-defined template */
+export interface UserDefinedScreen {
+	ref: string;
+	type: "user-template";
+	/** ID of the custom template to use */
+	templateId: string;
+	/** Position in the form (after which field ref, or "start"/"end") */
+	position: { after: string } | "start" | "end";
+	/** Field values for this screen instance */
+	fieldValues: Record<string, string | boolean | number>;
 }
 
 export interface FormTheme {
@@ -1084,4 +1150,5 @@ export type ScreenItem =
 	| { type: "landing"; screen: WelcomeScreen; field: FormField }
 	| { type: "field"; field: FormField; index: number }
 	| { type: "custom"; screen: CustomScreen }
+	| { type: "user-template"; screen: UserDefinedScreen; template: CustomPageTemplate }
 	| { type: "thankYou"; screen: ThankYouScreen };

@@ -6,6 +6,7 @@ import { WelcomeScreen } from "./screens/WelcomeScreen";
 import { ThankYouScreen } from "./screens/ThankYouScreen";
 import { LandingPage } from "./screens/LandingPage";
 import { CustomScreenRenderer } from "./screens/CustomScreenRenderer";
+import { UserTemplateScreen } from "./screens/UserTemplateScreen";
 import { FieldRenderer } from "./fields/FieldRenderer";
 import { NavigationControls } from "./navigation/NavigationControls";
 import { ProgressBar } from "./navigation/ProgressBar";
@@ -278,6 +279,14 @@ function FormRendererInner({ className, theme, turnstileSiteKey }: FormRendererI
 							screen={currentItem.screen}
 							theme={theme}
 							progress={progress / 100}
+							onNext={next}
+						/>
+					)}
+
+					{currentItem.type === "user-template" && (
+						<UserTemplateScreen
+							screen={currentItem.screen}
+							template={currentItem.template}
 							onNext={next}
 						/>
 					)}

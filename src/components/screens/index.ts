@@ -28,3 +28,6 @@ export type { ResultsTeaserScreenProps } from "./ResultsTeaserScreen";
 
 export { CTAScreen } from "./CTAScreen";
 export type { CTAScreenProps } from "./CTAScreen";
+
+export { UserTemplateScreen } from "./UserTemplateScreen";
+export type { UserTemplateScreenProps } from "./UserTemplateScreen";
