@@ -5,7 +5,9 @@
 /**
  * Parse hex color to RGB components
  */
-export function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+export function hexToRgb(
+	hex: string,
+): { r: number; g: number; b: number } | null {
 	const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
 	return result
 		? {
@@ -41,7 +43,7 @@ export function darken(color: string, amount: number): string {
 	return rgbToHex(
 		rgb.r * (1 - amount),
 		rgb.g * (1 - amount),
-		rgb.b * (1 - amount)
+		rgb.b * (1 - amount),
 	);
 }
 
@@ -55,7 +57,7 @@ export function lighten(color: string, amount: number): string {
 	return rgbToHex(
 		rgb.r + (255 - rgb.r) * amount,
 		rgb.g + (255 - rgb.g) * amount,
-		rgb.b + (255 - rgb.b) * amount
+		rgb.b + (255 - rgb.b) * amount,
 	);
 }
 

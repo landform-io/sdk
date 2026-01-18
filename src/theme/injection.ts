@@ -1,5 +1,5 @@
-import { generateThemeStyleTag } from "./generateCSS";
 import type { FormTheme } from "../types";
+import { generateThemeStyleTag } from "./generateCSS";
 
 const STYLE_ID = "lf-form-theme-variables";
 const CUSTOM_STYLE_ID = "lf-form-custom-css";
@@ -33,7 +33,7 @@ export function injectThemeCSS(theme: FormTheme): () => void {
 	// Handle custom CSS
 	if (theme.customCSS) {
 		let customStyleEl = document.getElementById(
-			CUSTOM_STYLE_ID
+			CUSTOM_STYLE_ID,
 		) as HTMLStyleElement | null;
 		if (!customStyleEl) {
 			customStyleEl = document.createElement("style");

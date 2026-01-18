@@ -1,13 +1,13 @@
 import React from "react";
 import type { FieldAnswer, FormField, FormSettings } from "../../types";
-import { MultipleChoice } from "./MultipleChoice";
-import { NumberField } from "./NumberField";
-import { OpinionScale } from "./OpinionScale";
-import { QuestionHeader } from "./QuestionHeader";
-import { Rating } from "./Rating";
-import { Statement } from "./Statement";
-import { TextField } from "./TextField";
-import { YesNo } from "./YesNo";
+import type { FieldMode } from "./shared/types";
+import { FieldWrapper } from "./shared/FieldWrapper";
+
+// Import shared components
+import { TextInput, TextArea, NumberInput, DateInput } from "./shared/inputs";
+import { MultipleChoice, PictureChoice, Dropdown, YesNo, Ranking } from "./shared/choices";
+import { Rating, OpinionScale, NPS, Slider } from "./shared/scales";
+import { Address, Legal, Statement, Signature, FileUpload } from "./shared/special";
 
 export interface FieldRendererProps {
 	field: FormField;
@@ -19,6 +19,8 @@ export interface FieldRendererProps {
 	questionNumber?: number;
 	showKeyHints?: boolean;
 	systemMessages?: FormSettings["systemMessages"];
+	/** Rendering mode - defaults to "live" for SDK */
+	mode?: FieldMode;
 }
 
 export function FieldRenderer({
@@ -29,102 +31,138 @@ export function FieldRenderer({
 	onNext,
 	showQuestionNumber,
 	questionNumber,
-	showKeyHints,
+	showKeyHints = true,
 	systemMessages,
+	mode = "live",
 }: FieldRendererProps) {
 	const commonProps = {
-		value,
-		error,
-		onChange,
+		field: field as any,
+		value: value as any,
+		onChange: onChange as any,
 		onNext,
-		showQuestionNumber,
-		questionNumber,
+		mode,
+		showKeyHints,
 	};
 
-	switch (field.type) {
-		case "short_text":
-		case "long_text":
-		case "email":
-		case "website":
-			return <TextField field={field} {...commonProps} />;
+	const renderField = () => {
+		switch (field.type) {
+			case "short_text":
+			case "email":
+			case "website":
+			case "phone_number":
+				return <TextInput {...commonProps} />;
 
-		case "number":
-			return <NumberField field={field} {...commonProps} />;
+			case "long_text":
+				return <TextArea {...commonProps} />;
 
-		case "multiple_choice":
-			return (
-				<MultipleChoice
+			case "number":
+				return <NumberInput {...commonProps} />;
+
+			case "date":
+				return <DateInput {...commonProps} />;
+
+			case "multiple_choice":
+				return <MultipleChoice {...commonProps} />;
+
+			case "picture_choice":
+				return <PictureChoice {...commonProps} />;
+
+			case "dropdown":
+				return <Dropdown {...commonProps} />;
+
+			case "yes_no":
+				return <YesNo {...commonProps} />;
+
+			case "ranking":
+				return <Ranking {...commonProps} />;
+
+			case "rating":
+				return <Rating {...commonProps} />;
+
+			case "opinion_scale":
+				return <OpinionScale {...commonProps} />;
+
+			case "nps":
+				return <NPS {...commonProps} />;
+
+			case "slider":
+				return <Slider {...commonProps} />;
+
+			case "address":
+				return <Address {...commonProps} />;
+
+			case "legal":
+				return <Legal {...commonProps} />;
+
+			case "statement":
+				return <Statement field={field as any} onNext={onNext} mode={mode} />;
+
+			case "signature":
+				return <Signature {...commonProps} />;
+
+			case "file_upload":
+				return <FileUpload {...commonProps} />;
+
+			// For field types not yet implemented, show a basic input
+			case "contact_info":
+			case "payment":
+			case "group":
+			case "matrix":
+			default:
+				return (
+					<>
+						<input
+							type="text"
+							value={(value as string) || ""}
+							onChange={(e) => onChange(e.target.value)}
+							onKeyDown={(e) => {
+								if (e.key === "Enter") {
+									e.preventDefault();
+									onNext();
+								}
+							}}
+							className="lf-input lf-input-underline w-full py-3"
+							placeholder={`Enter your ${field.type.replace(/_/g, " ")}`}
+						/>
+					</>
+				);
+		}
+	};
+
+	// Statement doesn't need the wrapper (it's just a continue button)
+	if (field.type === "statement") {
+		return (
+			<div className="lf-field">
+				<FieldWrapper
 					field={field}
-					{...commonProps}
-					showKeyHints={showKeyHints}
-					systemMessages={systemMessages}
-				/>
-			);
-
-		case "rating":
-			return <Rating field={field} {...commonProps} />;
-
-		case "opinion_scale":
-			return <OpinionScale field={field} {...commonProps} />;
-
-		case "yes_no":
-			return (
-				<YesNo field={field} {...commonProps} showKeyHints={showKeyHints} />
-			);
-
-		case "statement":
-			return (
-				<Statement
-					field={field}
-					onNext={onNext}
-					showQuestionNumber={showQuestionNumber}
 					questionNumber={questionNumber}
-				/>
-			);
-
-		// For field types not yet implemented, show a basic input
-		case "phone_number":
-		case "date":
-		case "dropdown":
-		case "picture_choice":
-		case "ranking":
-		case "nps":
-		case "legal":
-		case "file_upload":
-		case "contact_info":
-		case "payment":
-		case "group":
-		case "matrix":
-		case "address":
-		case "slider":
-		case "signature":
-		default:
-			return (
-				<div className="lf-field">
-					<QuestionHeader
-						field={field}
-						questionNumber={questionNumber}
-						showQuestionNumber={showQuestionNumber}
-					/>
-					<input
-						type="text"
-						value={(value as string) || ""}
-						onChange={(e) => onChange(e.target.value)}
-						onKeyDown={(e) => {
-							if (e.key === "Enter") {
-								e.preventDefault();
-								onNext();
-							}
-						}}
-						className="lf-input-underline"
-						placeholder={`Enter your ${field.type.replace(/_/g, " ")}`}
-					/>
-					{error && (
-						<p id={`${field.ref}-error`} className="lf-error">
-							{error}
-						</p>
-					)}
-				</div>
-			);
+					showQuestionNumber={showQuestionNumber}
+				>
+					{renderField()}
+				</FieldWrapper>
+				{error && (
+					<p id={`${field.ref}-error`} className="lf-error">
+						{error}
+					</p>
+				)}
+			</div>
+		);
 	}
+
+	return (
+		<div className="lf-field">
+			<FieldWrapper
+				field={field}
+				questionNumber={questionNumber}
+				showQuestionNumber={showQuestionNumber}
+			>
+				{renderField()}
+			</FieldWrapper>
+			{error && (
+				<p id={`${field.ref}-error`} className="lf-error">
+					{error}
+				</p>
+			)}
+		</div>
+	);
 }

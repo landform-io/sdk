@@ -899,7 +899,9 @@ export interface ThemeScreenTemplates {
 	/** Which template types are enabled for this theme */
 	enabled: ScreenTemplateType[];
 	/** Default styling overrides per template type */
-	defaults?: Partial<Record<ScreenTemplateType, Partial<CustomScreenProperties>>>;
+	defaults?: Partial<
+		Record<ScreenTemplateType, Partial<CustomScreenProperties>>
+	>;
 	/** User-defined custom templates */
 	customTemplates?: CustomPageTemplate[];
 }
@@ -1152,5 +1154,9 @@ export type ScreenItem =
 	| { type: "landing"; screen: WelcomeScreen; field: FormField }
 	| { type: "field"; field: FormField; index: number }
 	| { type: "custom"; screen: CustomScreen }
-	| { type: "user-template"; screen: UserDefinedScreen; template: CustomPageTemplate }
+	| {
+			type: "user-template";
+			screen: UserDefinedScreen;
+			template: CustomPageTemplate;
+	  }
 	| { type: "thankYou"; screen: ThankYouScreen };

@@ -75,7 +75,7 @@ export function formatTimeEstimate(seconds: number): string {
  */
 export function calculateRemainingTime(
 	content: FormContent,
-	answeredFieldRefs: string[]
+	answeredFieldRefs: string[],
 ): number {
 	let totalSeconds = 0;
 

@@ -1,15 +1,14 @@
 export {
-	calculateTimeEstimate,
-	formatTimeEstimate,
-	calculateRemainingTime,
-} from "./timeEstimate";
-
-export {
-	saveProgress,
-	loadProgress,
 	clearProgress,
-	markAsSubmitted,
-	hasSubmitted,
 	hasCookieConsent,
+	hasSubmitted,
+	loadProgress,
+	markAsSubmitted,
+	saveProgress,
 	setCookieConsent,
 } from "./storage";
+export {
+	calculateRemainingTime,
+	calculateTimeEstimate,
+	formatTimeEstimate,
+} from "./timeEstimate";

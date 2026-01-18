@@ -18,7 +18,7 @@ export function saveProgress(
 	projectId: string,
 	answers: ResponseAnswers,
 	currentIndex: number,
-	responseId: string | null
+	responseId: string | null,
 ): void {
 	if (typeof window === "undefined") return;
 
