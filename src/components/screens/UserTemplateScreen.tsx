@@ -1,11 +1,20 @@
 import React, { useMemo, useEffect, useRef } from "react";
 import DOMPurify from "dompurify";
 import type { CustomPageTemplate, UserDefinedScreen } from "../../types";
+import {
+	parseActionFromElement,
+	type ParsedAction,
+	LF_ACTIONS,
+} from "../../actions";
 
 export interface UserTemplateScreenProps {
 	screen: UserDefinedScreen;
 	template: CustomPageTemplate;
 	onNext: () => void;
+	onBack?: () => void;
+	onSubmit?: () => void;
+	onGoto?: (screenId: string) => void;
+	onRestart?: () => void;
 }
 
 /**
@@ -31,7 +40,17 @@ function interpolateTemplate(
 }
 
 /**
+ * Allowed data-lf-* attributes for actions
+ */
+const ALLOWED_LF_ATTRS = [
+	"data-lf-action",
+	"data-lf-target",
+	"data-lf-url",
+];
+
+/**
  * Sanitizes HTML content using DOMPurify
+ * Scripts are allowed to enable custom JavaScript functionality
  */
 function sanitizeHtml(html: string): string {
 	return DOMPurify.sanitize(html, {
@@ -65,6 +84,7 @@ function sanitizeHtml(html: string): string {
 			"nav",
 			"figure",
 			"figcaption",
+			"script",
 		],
 		ALLOWED_ATTR: [
 			"class",
@@ -78,11 +98,17 @@ function sanitizeHtml(html: string): string {
 			"id",
 			"width",
 			"height",
+			// Script attributes
+			"type",
+			"defer",
+			"async",
+			// Allow Landform action attributes
+			...ALLOWED_LF_ATTRS,
 		],
 		ALLOW_DATA_ATTR: false,
 		ADD_ATTR: ["target"],
 		// Ensure links open in new tabs
-		FORBID_TAGS: ["script", "style", "iframe", "form", "input", "textarea"],
+		FORBID_TAGS: ["style", "iframe", "form", "input", "textarea"],
 	});
 }
 
@@ -128,8 +154,13 @@ export function UserTemplateScreen({
 	screen,
 	template,
 	onNext,
+	onBack,
+	onSubmit,
+	onGoto,
+	onRestart,
 }: UserTemplateScreenProps) {
 	const styleRef = useRef<HTMLStyleElement | null>(null);
+	const scriptRef = useRef<HTMLScriptElement | null>(null);
 
 	// Build field values with defaults
 	const fieldValues = useMemo(() => {
@@ -185,24 +216,87 @@ export function UserTemplateScreen({
 		};
 	}, [scopedCss, template.id]);
 
+	// Inject template JavaScript
+	useEffect(() => {
+		if (!template.js) return;
+
+		// Create script element
+		const scriptEl = document.createElement("script");
+		scriptEl.setAttribute("data-template-js", template.id);
+		scriptEl.textContent = template.js;
+		document.body.appendChild(scriptEl);
+		scriptRef.current = scriptEl;
+
+		// Cleanup on unmount
+		return () => {
+			if (scriptRef.current) {
+				scriptRef.current.remove();
+				scriptRef.current = null;
+			}
+		};
+	}, [template.js, template.id]);
+
+	// Handle action execution
+	const executeAction = (action: ParsedAction) => {
+		switch (action.action) {
+			case LF_ACTIONS.NEXT:
+				onNext();
+				break;
+			case LF_ACTIONS.BACK:
+				if (onBack) onBack();
+				break;
+			case LF_ACTIONS.SUBMIT:
+				if (onSubmit) onSubmit();
+				else onNext(); // Fallback to next if no submit handler
+				break;
+			case LF_ACTIONS.GOTO:
+				if (onGoto && action.target) onGoto(action.target);
+				break;
+			case LF_ACTIONS.RESTART:
+				if (onRestart) onRestart();
+				break;
+			case LF_ACTIONS.LINK:
+				if (action.url) {
+					window.open(action.url, "_blank", "noopener,noreferrer");
+				}
+				break;
+		}
+	};
+
 	// Handle button clicks within the template
 	const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
 		const target = e.target as HTMLElement;
 
-		// If a button or link with class lf-button is clicked, advance
-		if (
-			target.tagName === "BUTTON" ||
-			target.classList.contains("lf-button") ||
+		// Find the closest actionable element (button or element with data-lf-action)
+		const actionElement =
+			target.closest("[data-lf-action]") ||
 			target.closest("button") ||
-			target.closest(".lf-button")
-		) {
-			e.preventDefault();
-			onNext();
+			target.closest(".lf-button");
+
+		if (actionElement) {
+			// Try to parse action from element
+			const action = parseActionFromElement(actionElement as HTMLElement);
+
+			if (action) {
+				e.preventDefault();
+				executeAction(action);
+				return;
+			}
+
+			// Fallback: if it's a button without data-lf-action, treat as "next"
+			if (
+				actionElement.tagName === "BUTTON" ||
+				actionElement.classList.contains("lf-button")
+			) {
+				e.preventDefault();
+				onNext();
+				return;
+			}
 		}
 
-		// Handle external links
+		// Handle external links (without data-lf-action)
 		const link = target.closest("a") as HTMLAnchorElement | null;
-		if (link && link.href && !link.classList.contains("lf-button")) {
+		if (link && link.href && !link.hasAttribute("data-lf-action")) {
 			// Let external links work normally
 			return;
 		}

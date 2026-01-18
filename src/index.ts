@@ -37,6 +37,7 @@ export type {
 	StatementProps,
 	TextFieldProps,
 	ThankYouScreenProps,
+	UserTemplateScreenProps,
 	WelcomeScreenProps,
 	YesNoProps,
 } from "./components";
@@ -69,6 +70,7 @@ export {
 	ThankYouScreen,
 	TimeToComplete,
 	useFormContext,
+	UserTemplateScreen,
 	WelcomeScreen,
 	YesNo,
 } from "./components";
@@ -108,5 +110,15 @@ export {
 	radiusToCSS,
 	rgbToHex,
 } from "./theme";
+// Actions (for custom templates)
+export {
+	ACTION_DEFINITIONS,
+	getActionDefinition,
+	isValidAction,
+	LF_ACTIONS,
+	LF_DATA_ATTRIBUTES,
+	parseActionFromElement,
+} from "./actions";
+export type { ActionDefinition, LfAction, ParsedAction } from "./actions";
 // Types
 export * from "./types";

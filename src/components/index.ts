@@ -21,6 +21,7 @@ export {
 	InfoScreen,
 	ResultsTeaserScreen,
 	CTAScreen,
+	UserTemplateScreen,
 } from "./screens";
 export type {
 	WelcomeScreenProps,
@@ -33,6 +34,7 @@ export type {
 	InfoScreenProps,
 	ResultsTeaserScreenProps,
 	CTAScreenProps,
+	UserTemplateScreenProps,
 } from "./screens";
 
 // Navigation

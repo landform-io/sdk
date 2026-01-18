@@ -950,6 +950,8 @@ export interface CustomPageTemplate {
 	html: string;
 	/** CSS styles for the template */
 	css?: string;
+	/** JavaScript code for the template (runs globally, not scoped) */
+	js?: string;
 	/** Fields that can be configured when using this template */
 	fields: CustomTemplateField[];
 	/** Preview thumbnail URL */
