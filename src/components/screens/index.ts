@@ -7,9 +7,6 @@ export type { ThankYouScreenProps } from "./ThankYouScreen";
 export { ClosedScreen } from "./ClosedScreen";
 export type { ClosedScreenProps } from "./ClosedScreen";
 
-export { LandingPage } from "./LandingPage";
-export type { LandingPageProps } from "./LandingPage";
-
 // Custom screen templates
 export { CustomScreenRenderer } from "./CustomScreenRenderer";
 export type { CustomScreenRendererProps } from "./CustomScreenRenderer";

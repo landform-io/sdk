@@ -735,80 +735,6 @@ export interface ThemeComponentVariants {
 }
 
 // ============================================================================
-// Page Templates - Theme-controlled page structure
-// ============================================================================
-
-export interface ThemePageTemplates {
-	landing?: LandingPageTemplate;
-	questions?: QuestionPageTemplate;
-	completion?: CompletionPageTemplate;
-}
-
-export interface LandingPageTemplate {
-	/** Merge first field onto the landing page */
-	mergeFirstField: boolean;
-	/** Layout for the landing page */
-	layout: "centered" | "split-left" | "split-right" | "full-width";
-	/** Header configuration */
-	header?: {
-		enabled: boolean;
-		showLogo: boolean;
-		links?: HeaderLink[];
-	};
-	/** Side content (for split layouts) */
-	sideContent?: {
-		enabled: boolean;
-		position: "left" | "right";
-		/** Default images if content doesn't provide them */
-		defaultImages?: string[];
-		/** Gap between images */
-		gap?: string;
-		/** Image border radius */
-		borderRadius?: string;
-	};
-	/** Terms/legal footer */
-	termsFooter?: {
-		enabled: boolean;
-		/** Template with placeholders: {choices}, {termsLink}, {privacyLink}, {cookieLink} */
-		template?: string;
-		links?: {
-			terms?: string;
-			privacy?: string;
-			cookies?: string;
-			subscription?: string;
-		};
-	};
-	/** Choice button layout on landing */
-	choiceLayout?: "row" | "column";
-	/** Hide the default welcome screen button when first field is merged */
-	hideWelcomeButton?: boolean;
-}
-
-export interface HeaderLink {
-	label: string;
-	url: string;
-	style?: "text" | "button";
-}
-
-export interface QuestionPageTemplate {
-	/** Show question number */
-	showNumber: boolean;
-	/** Number style */
-	numberStyle?: "inline" | "badge" | "circle" | "arrow";
-	/** Animation between questions */
-	transition?: ScreenTransitionType;
-}
-
-export interface CompletionPageTemplate {
-	/** Layout for thank you screen */
-	layout: "centered" | "split-left" | "split-right";
-	/** Show share buttons */
-	showShareButtons?: boolean;
-	/** Show confetti animation */
-	showConfetti?: boolean;
-}
-
-// ============================================================================
 // Custom Screen Templates - SDK-provided, theme-configurable screens
 // ============================================================================
 
@@ -992,8 +918,6 @@ export interface FormTheme {
 	componentVariants?: ThemeComponentVariants;
 	/** Screen transition configuration */
 	screenTransitions?: ThemeScreenTransitions;
-	/** Page template configuration */
-	pageTemplates?: ThemePageTemplates;
 	/** Custom screen templates available in this theme */
 	screenTemplates?: ThemeScreenTemplates;
 }
@@ -1151,7 +1075,6 @@ export interface FieldState {
 
 export type ScreenItem =
 	| { type: "welcome"; screen: WelcomeScreen }
-	| { type: "landing"; screen: WelcomeScreen; field: FormField }
 	| { type: "field"; field: FormField; index: number }
 	| { type: "custom"; screen: CustomScreen }
 	| {

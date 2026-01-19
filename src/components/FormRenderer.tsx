@@ -4,7 +4,6 @@ import { useTheme, useThemeContext } from "../hooks/useTheme";
 import { useScreenTransition } from "../hooks/useScreenTransition";
 import { WelcomeScreen } from "./screens/WelcomeScreen";
 import { ThankYouScreen } from "./screens/ThankYouScreen";
-import { LandingPage } from "./screens/LandingPage";
 import { CustomScreenRenderer } from "./screens/CustomScreenRenderer";
 import { UserTemplateScreen } from "./screens/UserTemplateScreen";
 import { FieldRenderer } from "./fields/FieldRenderer";
@@ -245,19 +244,6 @@ function FormRendererInner({ className, theme, turnstileSiteKey }: FormRendererI
 				>
 					{currentItem.type === "welcome" && (
 						<WelcomeScreen screen={currentItem.screen} onStart={start} />
-					)}
-
-					{currentItem.type === "landing" && theme?.pageTemplates?.landing && (
-						<LandingPage
-							screen={currentItem.screen}
-							field={currentItem.field}
-							template={theme.pageTemplates.landing}
-							theme={theme}
-							value={answers[currentItem.field.ref]}
-							error={errors[currentItem.field.ref] || null}
-							onFieldAnswer={setAnswer}
-							onNext={next}
-						/>
 					)}
 
 					{currentItem.type === "field" && (
