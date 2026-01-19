@@ -1,6 +1,6 @@
 {
   "name": "@landform.io/sdk",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "Form rendering SDK for Landform.io",
   "type": "module",
   "main": "./dist/index.cjs",

@@ -157,6 +157,13 @@ export function generateComponentStyles(): string {
 	color: var(--lf-color-error);
 }
 
+/* Success Icon */
+.lf-success-icon {
+	color: var(--lf-color-success);
+	background-color: color-mix(in srgb, var(--lf-color-success) 15%, transparent);
+	border-radius: 9999px;
+}
+
 /* Input Base */
 .lf-input {
 	width: 100%;
