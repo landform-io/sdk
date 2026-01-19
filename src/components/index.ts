@@ -12,7 +12,6 @@ export type { FormContainerProps, QuestionContainerProps } from "./layout";
 // Screens
 export {
 	WelcomeScreen,
-	ThankYouScreen,
 	ClosedScreen,
 	CustomScreenRenderer,
 	MilestoneScreen,
@@ -24,7 +23,6 @@ export {
 } from "./screens";
 export type {
 	WelcomeScreenProps,
-	ThankYouScreenProps,
 	ClosedScreenProps,
 	CustomScreenRendererProps,
 	MilestoneScreenProps,

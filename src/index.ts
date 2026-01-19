@@ -30,7 +30,6 @@ export type {
 	ResultsTeaserScreenProps,
 	SectionScreenProps,
 	TextFieldProps,
-	ThankYouScreenProps,
 	UserTemplateScreenProps,
 	WelcomeScreenProps,
 	// Shared field component types
@@ -78,7 +77,6 @@ export {
 	ResultsTeaserScreen,
 	SectionScreen,
 	TextField,
-	ThankYouScreen,
 	TimeToComplete,
 	useFormContext,
 	UserTemplateScreen,

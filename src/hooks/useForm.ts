@@ -6,7 +6,6 @@ import type {
 	FormSettings,
 	FormField,
 	WelcomeScreen,
-	ThankYouScreen,
 	CustomScreen,
 	ResponseAnswers,
 	FieldAnswer,
@@ -59,7 +58,6 @@ export interface UseFormReturn {
 	canGoBack: boolean;
 	canGoNext: boolean;
 	isOnWelcome: boolean;
-	isOnThankYou: boolean;
 	isOnField: boolean;
 	isOnCustomScreen: boolean;
 
@@ -215,14 +213,10 @@ export function useForm(options: UseFormOptions): UseFormReturn {
 			}
 		});
 
-		// Add custom screens positioned at "end" (before thank you screens)
+		// Add custom screens positioned at "end"
 		const endScreens = customScreens.filter((cs) => cs.position === "end");
 		for (const screen of endScreens) {
 			items.push({ type: "custom", screen });
-		}
-
-		for (const screen of content.thankYouScreens) {
-			items.push({ type: "thankYou", screen });
 		}
 
 		return items;
@@ -240,7 +234,6 @@ export function useForm(options: UseFormOptions): UseFormReturn {
 	const canGoBack = currentIndex > firstFieldIndex;
 	const canGoNext = currentIndex < sequence.length - 1;
 	const isOnWelcome = currentItem?.type === "welcome";
-	const isOnThankYou = currentItem?.type === "thankYou";
 	const isOnField = currentItem?.type === "field";
 	const isOnCustomScreen = currentItem?.type === "custom";
 
@@ -309,7 +302,6 @@ export function useForm(options: UseFormOptions): UseFormReturn {
 				captchaToken: captchaToken || undefined,
 			});
 			setIsCompleted(true);
-			setCurrentIndex(sequence.length - 1); // Go to thank you screen
 
 			// Clear autosaved progress and mark as submitted for duplicate prevention
 			clearProgress(projectId);
@@ -452,7 +444,6 @@ export function useForm(options: UseFormOptions): UseFormReturn {
 		canGoBack,
 		canGoNext,
 		isOnWelcome,
-		isOnThankYou,
 		isOnField,
 		isOnCustomScreen,
 

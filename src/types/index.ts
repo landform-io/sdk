@@ -10,7 +10,6 @@ export interface FormContent {
 	schemaVersion: number;
 	welcomeScreens: WelcomeScreen[];
 	fields: FormField[];
-	thankYouScreens: ThankYouScreen[];
 	branching: FieldBranching[];
 	logic: LogicRule[];
 	variables: FormVariables;
@@ -40,21 +39,6 @@ export interface WelcomeScreen {
 	sideImages?: Attachment[];
 }
 
-export interface ThankYouScreen {
-	ref: string;
-	title: string;
-	properties: {
-		description?: string;
-		showButton?: boolean;
-		buttonText?: string;
-		buttonMode?: "reload" | "redirect" | "default";
-		redirectUrl?: string;
-		shareIcons?: boolean;
-	};
-	attachment?: Attachment;
-	layout?: Layout;
-	position?: Position;
-}
 
 // ============================================================================
 // Fields
@@ -450,7 +434,7 @@ export interface LogicVariable {
 
 export interface LogicActionDetails {
 	to?: {
-		type: "field" | "thankyou" | "outcome";
+		type: "field" | "outcome";
 		value: string;
 	};
 	target?: {
@@ -1081,5 +1065,4 @@ export type ScreenItem =
 			type: "user-template";
 			screen: UserDefinedScreen;
 			template: CustomPageTemplate;
-	  }
-	| { type: "thankYou"; screen: ThankYouScreen };
+	  };

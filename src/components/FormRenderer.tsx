@@ -3,7 +3,6 @@ import { FormProvider, useFormContext } from "./FormProvider";
 import { useTheme, useThemeContext } from "../hooks/useTheme";
 import { useScreenTransition } from "../hooks/useScreenTransition";
 import { WelcomeScreen } from "./screens/WelcomeScreen";
-import { ThankYouScreen } from "./screens/ThankYouScreen";
 import { CustomScreenRenderer } from "./screens/CustomScreenRenderer";
 import { UserTemplateScreen } from "./screens/UserTemplateScreen";
 import { FieldRenderer } from "./fields/FieldRenderer";
@@ -275,10 +274,6 @@ function FormRendererInner({ className, theme, turnstileSiteKey }: FormRendererI
 							template={currentItem.template}
 							onNext={next}
 						/>
-					)}
-
-					{currentItem.type === "thankYou" && (
-						<ThankYouScreen screen={currentItem.screen} />
 					)}
 				</div>
 			</div>
