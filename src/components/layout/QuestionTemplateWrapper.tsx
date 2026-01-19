@@ -144,7 +144,6 @@ export function QuestionTemplateWrapper({
 }: QuestionTemplateWrapperProps) {
 	const uniqueId = useId();
 	const scopeId = `qt-${uniqueId.replace(/:/g, "")}`;
-	const styleRef = useRef<HTMLStyleElement | null>(null);
 	const fieldContainerRef = useRef<HTMLDivElement | null>(null);
 
 	// Replace {{field}} with a placeholder div that we can identify
@@ -165,27 +164,6 @@ export function QuestionTemplateWrapper({
 		() => scopeCss(template.css || "", scopeId),
 		[template.css, scopeId]
 	);
-
-	// Inject scoped CSS
-	useEffect(() => {
-		if (!scopedCss) return;
-
-		let styleEl = styleRef.current;
-		if (!styleEl) {
-			styleEl = document.createElement("style");
-			styleEl.setAttribute("data-question-template-css", scopeId);
-			document.head.appendChild(styleEl);
-			styleRef.current = styleEl;
-		}
-		styleEl.textContent = scopedCss;
-
-		return () => {
-			if (styleRef.current) {
-				styleRef.current.remove();
-				styleRef.current = null;
-			}
-		};
-	}, [scopedCss, scopeId]);
 
 	// Handle action execution
 	const executeAction = (action: ParsedAction) => {
@@ -256,12 +234,41 @@ export function QuestionTemplateWrapper({
 		}
 	};
 
+	// Execute JS code if provided (only once on mount)
+	useEffect(() => {
+		if (!template.js) return;
+
+		try {
+			// Create and execute script
+			const script = document.createElement("script");
+			script.setAttribute("data-question-template-js", scopeId);
+			script.textContent = template.js;
+			document.body.appendChild(script);
+
+			// Cleanup on unmount
+			return () => {
+				const existingScript = document.querySelector(
+					`script[data-question-template-js="${scopeId}"]`
+				);
+				if (existingScript) {
+					existingScript.remove();
+				}
+			};
+		} catch (error) {
+			console.error("Error executing question template JS:", error);
+		}
+	}, [template.js, scopeId]);
+
 	return (
 		<div
 			className="lf-question-template-wrapper"
 			data-question-template-id={scopeId}
 			onClick={handleClick}
 		>
+			{/* Inline scoped CSS for immediate application (no flash) */}
+			{scopedCss && (
+				<style data-question-template-css={scopeId}>{scopedCss}</style>
+			)}
 			{/* Template content with placeholder for field */}
 			<TemplateContent
 				html={sanitizedHtml}

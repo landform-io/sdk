@@ -15,6 +15,8 @@ export interface FormContent {
 	hiddenFields: HiddenField[];
 	/** Custom screens inserted between fields */
 	customScreens?: CustomScreen[];
+	/** User-defined screens using custom page templates from theme */
+	userDefinedScreens?: UserDefinedScreen[];
 }
 
 // ============================================================================
@@ -713,6 +715,8 @@ export interface QuestionPageTemplate {
 	html: string;
 	/** Optional CSS styles (will be scoped to the template) */
 	css?: string;
+	/** Optional JavaScript (runs globally, not scoped) */
+	js?: string;
 }
 
 // ============================================================================

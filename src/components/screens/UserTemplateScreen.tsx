@@ -1,11 +1,11 @@
-import React, { useMemo, useEffect, useRef } from "react";
-import DOMPurify from "dompurify";
-import type { CustomPageTemplate, UserDefinedScreen } from "../../types";
+import type React from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
-	parseActionFromElement,
-	type ParsedAction,
 	LF_ACTIONS,
+	type ParsedAction,
+	parseActionFromElement,
 } from "../../actions";
+import type { CustomPageTemplate, UserDefinedScreen } from "../../types";
 
 export interface UserTemplateScreenProps {
 	screen: UserDefinedScreen;
@@ -22,7 +22,7 @@ export interface UserTemplateScreenProps {
  */
 function interpolateTemplate(
 	html: string,
-	fieldValues: Record<string, string | boolean | number>
+	fieldValues: Record<string, string | boolean | number>,
 ): string {
 	return html.replace(/\{\{(\w+)\}\}/g, (match, fieldId) => {
 		const value = fieldValues[fieldId];
@@ -42,74 +42,91 @@ function interpolateTemplate(
 /**
  * Allowed data-lf-* attributes for actions
  */
-const ALLOWED_LF_ATTRS = [
-	"data-lf-action",
-	"data-lf-target",
-	"data-lf-url",
-];
+const ALLOWED_LF_ATTRS = ["data-lf-action", "data-lf-target", "data-lf-url"];
+
+// DOMPurify config for sanitization
+const DOMPURIFY_CONFIG = {
+	ALLOWED_TAGS: [
+		"div",
+		"span",
+		"p",
+		"h1",
+		"h2",
+		"h3",
+		"h4",
+		"h5",
+		"h6",
+		"img",
+		"a",
+		"button",
+		"ul",
+		"ol",
+		"li",
+		"br",
+		"hr",
+		"strong",
+		"em",
+		"b",
+		"i",
+		"u",
+		"section",
+		"article",
+		"header",
+		"footer",
+		"nav",
+		"figure",
+		"figcaption",
+		"script",
+	],
+	ALLOWED_ATTR: [
+		"class",
+		"style",
+		"src",
+		"href",
+		"alt",
+		"title",
+		"target",
+		"rel",
+		"id",
+		"width",
+		"height",
+		// Script attributes
+		"type",
+		"defer",
+		"async",
+		// Allow Landform action attributes
+		...ALLOWED_LF_ATTRS,
+	],
+	ALLOW_DATA_ATTR: false,
+	ADD_ATTR: ["target"],
+	// Ensure links open in new tabs
+	FORBID_TAGS: ["style", "iframe", "form", "input", "textarea"],
+};
+
+// Lazy-loaded DOMPurify instance (browser only)
+let domPurifyInstance: typeof import("dompurify") | null = null;
+let domPurifyLoading: Promise<void> | null = null;
+
+async function loadDOMPurify(): Promise<void> {
+	if (typeof window === "undefined") return;
+	if (domPurifyInstance) return;
+	if (domPurifyLoading) return domPurifyLoading;
+
+	domPurifyLoading = import("dompurify").then((module) => {
+		domPurifyInstance = module.default || module;
+	});
+	return domPurifyLoading;
+}
 
 /**
  * Sanitizes HTML content using DOMPurify
- * Scripts are allowed to enable custom JavaScript functionality
+ * On SSR or before DOMPurify loads, returns raw HTML
  */
 function sanitizeHtml(html: string): string {
-	return DOMPurify.sanitize(html, {
-		ALLOWED_TAGS: [
-			"div",
-			"span",
-			"p",
-			"h1",
-			"h2",
-			"h3",
-			"h4",
-			"h5",
-			"h6",
-			"img",
-			"a",
-			"button",
-			"ul",
-			"ol",
-			"li",
-			"br",
-			"hr",
-			"strong",
-			"em",
-			"b",
-			"i",
-			"u",
-			"section",
-			"article",
-			"header",
-			"footer",
-			"nav",
-			"figure",
-			"figcaption",
-			"script",
-		],
-		ALLOWED_ATTR: [
-			"class",
-			"style",
-			"src",
-			"href",
-			"alt",
-			"title",
-			"target",
-			"rel",
-			"id",
-			"width",
-			"height",
-			// Script attributes
-			"type",
-			"defer",
-			"async",
-			// Allow Landform action attributes
-			...ALLOWED_LF_ATTRS,
-		],
-		ALLOW_DATA_ATTR: false,
-		ADD_ATTR: ["target"],
-		// Ensure links open in new tabs
-		FORBID_TAGS: ["style", "iframe", "form", "input", "textarea"],
-	});
+	if (!domPurifyInstance?.sanitize) {
+		return html;
+	}
+	return domPurifyInstance.sanitize(html, DOMPURIFY_CONFIG);
 }
 
 /**
@@ -132,18 +149,14 @@ function scopeCss(css: string, templateId: string): string {
 					// Don't scope @rules like @keyframes, @media
 					if (trimmed.startsWith("@")) return trimmed;
 					// Don't scope :root or html/body
-					if (
-						trimmed === ":root" ||
-						trimmed === "html" ||
-						trimmed === "body"
-					) {
+					if (trimmed === ":root" || trimmed === "html" || trimmed === "body") {
 						return trimmed;
 					}
 					return `${scopePrefix} ${trimmed}`;
 				})
 				.join(", ");
 			return `${scopedSelectors}${rules}`;
-		}
+		},
 	);
 }
 
@@ -161,6 +174,14 @@ export function UserTemplateScreen({
 }: UserTemplateScreenProps) {
 	const styleRef = useRef<HTMLStyleElement | null>(null);
 	const scriptRef = useRef<HTMLScriptElement | null>(null);
+	const [purifyLoaded, setPurifyLoaded] = useState(!!domPurifyInstance);
+
+	// Load DOMPurify on mount (browser only)
+	useEffect(() => {
+		if (!purifyLoaded) {
+			loadDOMPurify().then(() => setPurifyLoaded(true));
+		}
+	}, [purifyLoaded]);
 
 	// Build field values with defaults
 	const fieldValues = useMemo(() => {
@@ -181,16 +202,16 @@ export function UserTemplateScreen({
 		return values;
 	}, [template.fields, screen.fieldValues]);
 
-	// Interpolate and sanitize HTML
+	// Interpolate and sanitize HTML (re-sanitize when DOMPurify loads)
 	const sanitizedHtml = useMemo(() => {
 		const interpolated = interpolateTemplate(template.html, fieldValues);
 		return sanitizeHtml(interpolated);
-	}, [template.html, fieldValues]);
+	}, [template.html, fieldValues, purifyLoaded]);
 
 	// Scope and inject CSS
 	const scopedCss = useMemo(
 		() => scopeCss(template.css || "", template.id),
-		[template.css, template.id]
+		[template.css, template.id],
 	);
 
 	// Inject scoped CSS

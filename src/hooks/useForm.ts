@@ -6,6 +6,7 @@ import type {
 	FormSettings,
 	FormField,
 	CustomScreen,
+	UserDefinedScreen,
 	ResponseAnswers,
 	FieldAnswer,
 	ScreenItem,
@@ -58,6 +59,7 @@ export interface UseFormReturn {
 	canGoNext: boolean;
 	isOnField: boolean;
 	isOnCustomScreen: boolean;
+	isOnUserTemplateScreen: boolean;
 
 	// Actions
 	start: () => Promise<void>;
@@ -177,6 +179,10 @@ export function useForm(options: UseFormOptions): UseFormReturn {
 	const sequence = useMemo<ScreenItem[]>(() => {
 		const items: ScreenItem[] = [];
 		const customScreens = content.customScreens || [];
+		const userDefinedScreens = content.userDefinedScreens || [];
+
+		// Track which screens have been added
+		const addedUserDefinedScreenRefs = new Set<string>();
 
 		// Helper to get custom screens positioned after a specific ref
 		const getCustomScreensAfter = (ref: string): CustomScreen[] => {
@@ -185,10 +191,41 @@ export function useForm(options: UseFormOptions): UseFormReturn {
 			);
 		};
 
+		// Helper to get user-defined screens positioned after a specific ref
+		const getUserDefinedScreensAfter = (ref: string): UserDefinedScreen[] => {
+			return userDefinedScreens.filter(
+				(uds) => typeof uds.position === "object" && uds.position.after === ref
+			);
+		};
+
+		// Helper to add a user-defined screen to the sequence
+		const addUserDefinedScreen = (screen: UserDefinedScreen) => {
+			if (addedUserDefinedScreenRefs.has(screen.ref)) return; // Already added
+			const template = theme?.screenTemplates?.customTemplates?.find(
+				(t) => t.id === screen.templateId
+			);
+			if (template) {
+				items.push({ type: "user-template", screen, template });
+				addedUserDefinedScreenRefs.add(screen.ref);
+			} else {
+				// Template not found - log warning for debugging
+				console.warn(
+					`[Landform SDK] Template "${screen.templateId}" not found for screen "${screen.ref}". ` +
+					`Available templates: ${theme?.screenTemplates?.customTemplates?.map(t => t.id).join(", ") || "none"}`
+				);
+			}
+		};
+
 		// Add custom screens positioned at "start"
 		const startScreens = customScreens.filter((cs) => cs.position === "start");
 		for (const screen of startScreens) {
 			items.push({ type: "custom", screen });
+		}
+
+		// Add user-defined screens positioned at "start"
+		const startUserDefinedScreens = userDefinedScreens.filter((uds) => uds.position === "start");
+		for (const screen of startUserDefinedScreens) {
+			addUserDefinedScreen(screen);
 		}
 
 		// Add fields
@@ -199,6 +236,11 @@ export function useForm(options: UseFormOptions): UseFormReturn {
 			for (const cs of getCustomScreensAfter(field.ref)) {
 				items.push({ type: "custom", screen: cs });
 			}
+
+			// Add user-defined screens positioned after this field
+			for (const uds of getUserDefinedScreensAfter(field.ref)) {
+				addUserDefinedScreen(uds);
+			}
 		});
 
 		// Add custom screens positioned at "end"
@@ -207,8 +249,28 @@ export function useForm(options: UseFormOptions): UseFormReturn {
 			items.push({ type: "custom", screen });
 		}
 
+		// Add user-defined screens positioned at "end"
+		const endUserDefinedScreens = userDefinedScreens.filter((uds) => uds.position === "end");
+		for (const screen of endUserDefinedScreens) {
+			addUserDefinedScreen(screen);
+		}
+
+		// Add any remaining user-defined screens that weren't added
+		// (e.g., positioned after a field that doesn't exist)
+		for (const screen of userDefinedScreens) {
+			addUserDefinedScreen(screen);
+		}
+
+		// Debug: log sequence info
+		if (items.length === 0 && (content.fields.length > 0 || userDefinedScreens.length > 0)) {
+			console.warn(
+				`[Landform SDK] Built empty sequence despite having content. ` +
+				`Fields: ${content.fields.length}, UserDefinedScreens: ${userDefinedScreens.length}`
+			);
+		}
+
 		return items;
-	}, [content]);
+	}, [content, theme]);
 
 	// Current item
 	const currentItem = sequence[currentIndex] || null;
@@ -216,13 +278,19 @@ export function useForm(options: UseFormOptions): UseFormReturn {
 	// Computed values
 	const totalFields = content.fields.length;
 	const answeredCount = Object.keys(answers).length;
-	const progress = totalFields > 0 ? (answeredCount / totalFields) * 100 : 0;
+	// Progress: if there are fields, base on answers; otherwise base on sequence position
+	const progress = totalFields > 0
+		? (answeredCount / totalFields) * 100
+		: sequence.length > 0
+			? ((currentIndex + 1) / sequence.length) * 100
+			: 0;
 	const firstFieldIndex = 0;
 	const lastFieldIndex = content.fields.length - 1;
 	const canGoBack = currentIndex > firstFieldIndex;
 	const canGoNext = currentIndex < sequence.length - 1;
 	const isOnField = currentItem?.type === "field";
 	const isOnCustomScreen = currentItem?.type === "custom";
+	const isOnUserTemplateScreen = currentItem?.type === "user-template";
 
 	// Start response
 	const start = useCallback(async () => {
@@ -304,6 +372,22 @@ export function useForm(options: UseFormOptions): UseFormReturn {
 	const next = useCallback(async (pendingValue?: FieldAnswer) => {
 		// Handle custom screens - just advance, no validation needed
 		if (currentItem?.type === "custom") {
+			// If this is the last screen and there are no fields, submit
+			if (currentIndex === sequence.length - 1 && totalFields === 0) {
+				await submit();
+				return;
+			}
+			setCurrentIndex((prev) => Math.min(prev + 1, sequence.length - 1));
+			return;
+		}
+
+		// Handle user-template screens - just advance, no validation needed
+		if (currentItem?.type === "user-template") {
+			// If this is the last screen and there are no fields, submit
+			if (currentIndex === sequence.length - 1 && totalFields === 0) {
+				await submit();
+				return;
+			}
 			setCurrentIndex((prev) => Math.min(prev + 1, sequence.length - 1));
 			return;
 		}
@@ -349,6 +433,7 @@ export function useForm(options: UseFormOptions): UseFormReturn {
 		currentIndex,
 		lastFieldIndex,
 		sequence.length,
+		totalFields,
 		responseId,
 		sessionId,
 		answers,
@@ -427,6 +512,7 @@ export function useForm(options: UseFormOptions): UseFormReturn {
 		canGoNext,
 		isOnField,
 		isOnCustomScreen,
+		isOnUserTemplateScreen,
 
 		// Actions
 		start,
