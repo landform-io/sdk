@@ -7,3 +7,6 @@ export type { QuestionContainerProps } from "./QuestionContainer";
 export { Branding } from "./Branding";
 
 export { Header } from "./Header";
+
+export { QuestionTemplateWrapper } from "./QuestionTemplateWrapper";
+export type { QuestionTemplateWrapperProps } from "./QuestionTemplateWrapper";

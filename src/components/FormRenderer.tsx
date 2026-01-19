@@ -13,6 +13,7 @@ import { CookieConsent } from "./CookieConsent";
 import { Captcha } from "./Captcha";
 import { Branding } from "./layout/Branding";
 import { Header } from "./layout/Header";
+import { QuestionTemplateWrapper } from "./layout/QuestionTemplateWrapper";
 import { hasCookieConsent } from "../utils/storage";
 import type { UseFormOptions } from "../hooks/useForm";
 
@@ -246,17 +247,36 @@ function FormRendererInner({ className, theme, turnstileSiteKey }: FormRendererI
 					)}
 
 					{currentItem.type === "field" && (
-						<FieldRenderer
-							field={currentItem.field}
-							value={answers[currentItem.field.ref]}
-							error={errors[currentItem.field.ref] || null}
-							onChange={(value) => setAnswer(currentItem.field.ref, value)}
-							onNext={next}
-							questionNumber={currentItem.index + 1}
-							showQuestionNumber={settings.showQuestionNumber}
-							showKeyHints={settings.showKeyHintOnChoices}
-							systemMessages={settings.systemMessages}
-						/>
+						theme?.questionPageTemplate ? (
+							<QuestionTemplateWrapper
+								template={theme.questionPageTemplate}
+								onNext={next}
+							>
+								<FieldRenderer
+									field={currentItem.field}
+									value={answers[currentItem.field.ref]}
+									error={errors[currentItem.field.ref] || null}
+									onChange={(value) => setAnswer(currentItem.field.ref, value)}
+									onNext={next}
+									questionNumber={currentItem.index + 1}
+									showQuestionNumber={settings.showQuestionNumber}
+									showKeyHints={settings.showKeyHintOnChoices}
+									systemMessages={settings.systemMessages}
+								/>
+							</QuestionTemplateWrapper>
+						) : (
+							<FieldRenderer
+								field={currentItem.field}
+								value={answers[currentItem.field.ref]}
+								error={errors[currentItem.field.ref] || null}
+								onChange={(value) => setAnswer(currentItem.field.ref, value)}
+								onNext={next}
+								questionNumber={currentItem.index + 1}
+								showQuestionNumber={settings.showQuestionNumber}
+								showKeyHints={settings.showKeyHintOnChoices}
+								systemMessages={settings.systemMessages}
+							/>
+						)
 					)}
 
 					{currentItem.type === "custom" && (

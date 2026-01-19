@@ -6,8 +6,8 @@ export { FormProvider, useFormContext } from "./FormProvider";
 export type { FormProviderProps, FormContextValue } from "./FormProvider";
 
 // Layout
-export { FormContainer, QuestionContainer, Branding } from "./layout";
-export type { FormContainerProps, QuestionContainerProps } from "./layout";
+export { FormContainer, QuestionContainer, Branding, QuestionTemplateWrapper } from "./layout";
+export type { FormContainerProps, QuestionContainerProps, QuestionTemplateWrapperProps } from "./layout";
 
 // Screens
 export {

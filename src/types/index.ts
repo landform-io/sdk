@@ -719,6 +719,26 @@ export interface ThemeComponentVariants {
 }
 
 // ============================================================================
+// Question Page Template - Custom layout for field questions
+// ============================================================================
+
+/**
+ * Template for customizing the layout around field questions.
+ * Allows themes to define custom HTML/CSS structure with a {{field}} placeholder
+ * where the actual field component will be rendered.
+ *
+ * Usage in HTML:
+ * - Use {{field}} as placeholder for the field component
+ * - Use data-lf-action attributes for navigation (next, back, submit, etc.)
+ */
+export interface QuestionPageTemplate {
+	/** HTML template with {{field}} placeholder for the field component */
+	html: string;
+	/** Optional CSS styles (will be scoped to the template) */
+	css?: string;
+}
+
+// ============================================================================
 // Custom Screen Templates - SDK-provided, theme-configurable screens
 // ============================================================================
 
@@ -904,6 +924,8 @@ export interface FormTheme {
 	screenTransitions?: ThemeScreenTransitions;
 	/** Custom screen templates available in this theme */
 	screenTemplates?: ThemeScreenTemplates;
+	/** Question page template for field layout customization */
+	questionPageTemplate?: QuestionPageTemplate;
 }
 
 // ============================================================================
