@@ -442,7 +442,7 @@ export function generateComponentStyles(): string {
 	font-size: 0.875rem;
 }
 
-/* Welcome & Thank You Screens */
+/* Thank You Screens */
 .lf-screen {
 	display: flex;
 	flex-direction: column;

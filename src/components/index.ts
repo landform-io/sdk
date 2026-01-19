@@ -11,7 +11,6 @@ export type { FormContainerProps, QuestionContainerProps, QuestionTemplateWrappe
 
 // Screens
 export {
-	WelcomeScreen,
 	ClosedScreen,
 	CustomScreenRenderer,
 	MilestoneScreen,
@@ -22,7 +21,6 @@ export {
 	UserTemplateScreen,
 } from "./screens";
 export type {
-	WelcomeScreenProps,
 	ClosedScreenProps,
 	CustomScreenRendererProps,
 	MilestoneScreenProps,

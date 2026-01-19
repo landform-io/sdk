@@ -51,9 +51,6 @@ export function calculateTimeEstimate(content: FormContent): number {
 		totalSeconds += fieldTime;
 	}
 
-	// Add time for welcome screens (reading time)
-	totalSeconds += content.welcomeScreens.length * 10;
-
 	return totalSeconds;
 }
 

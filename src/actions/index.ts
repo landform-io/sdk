@@ -8,7 +8,7 @@
  * <button data-lf-action="next">Continue</button>
  * <button data-lf-action="back">Go Back</button>
  * <button data-lf-action="submit">Submit Form</button>
- * <button data-lf-action="goto" data-lf-target="welcome">Start Over</button>
+ * <button data-lf-action="goto" data-lf-target="field_id">Go to Question</button>
  * <a data-lf-action="link" data-lf-url="https://example.com">Visit Site</a>
  */
 
@@ -93,7 +93,7 @@ export const ACTION_DEFINITIONS: ActionDefinition[] = [
 		label: "Go to Screen",
 		description: "Navigate to a specific screen by its ID",
 		example:
-			'<button class="lf-button" data-lf-action="goto" data-lf-target="welcome">Start Over</button>',
+			'<button class="lf-button" data-lf-action="goto" data-lf-target="field_id">Go to Question</button>',
 		attributes: [
 			{
 				name: "data-lf-target",

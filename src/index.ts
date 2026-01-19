@@ -32,7 +32,6 @@ export type {
 	SectionScreenProps,
 	TextFieldProps,
 	UserTemplateScreenProps,
-	WelcomeScreenProps,
 	// Shared field component types
 	FieldMode,
 	ModeBehavior,
@@ -82,7 +81,6 @@ export {
 	TimeToComplete,
 	useFormContext,
 	UserTemplateScreen,
-	WelcomeScreen,
 	NumberField,
 	// Shared field components (unified across editor, preview, and live modes)
 	getModeBehavior,

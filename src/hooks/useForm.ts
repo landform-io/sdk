@@ -5,7 +5,6 @@ import type {
 	FormTheme,
 	FormSettings,
 	FormField,
-	WelcomeScreen,
 	CustomScreen,
 	ResponseAnswers,
 	FieldAnswer,
@@ -57,7 +56,6 @@ export interface UseFormReturn {
 	progress: number;
 	canGoBack: boolean;
 	canGoNext: boolean;
-	isOnWelcome: boolean;
 	isOnField: boolean;
 	isOnCustomScreen: boolean;
 
@@ -193,16 +191,6 @@ export function useForm(options: UseFormOptions): UseFormReturn {
 			items.push({ type: "custom", screen });
 		}
 
-		// Handle welcome screens
-		for (const screen of content.welcomeScreens) {
-			items.push({ type: "welcome", screen });
-
-			// Add custom screens positioned after this welcome screen
-			for (const cs of getCustomScreensAfter(screen.ref)) {
-				items.push({ type: "custom", screen: cs });
-			}
-		}
-
 		// Add fields
 		content.fields.forEach((field, index) => {
 			items.push({ type: "field", field, index });
@@ -229,11 +217,10 @@ export function useForm(options: UseFormOptions): UseFormReturn {
 	const totalFields = content.fields.length;
 	const answeredCount = Object.keys(answers).length;
 	const progress = totalFields > 0 ? (answeredCount / totalFields) * 100 : 0;
-	const firstFieldIndex = content.welcomeScreens.length;
-	const lastFieldIndex = firstFieldIndex + content.fields.length - 1;
+	const firstFieldIndex = 0;
+	const lastFieldIndex = content.fields.length - 1;
 	const canGoBack = currentIndex > firstFieldIndex;
 	const canGoNext = currentIndex < sequence.length - 1;
-	const isOnWelcome = currentItem?.type === "welcome";
 	const isOnField = currentItem?.type === "field";
 	const isOnCustomScreen = currentItem?.type === "custom";
 
@@ -246,15 +233,10 @@ export function useForm(options: UseFormOptions): UseFormReturn {
 
 			// Track start event
 			client.trackEvent({ event: "start", sessionId });
-
-			// Move past welcome screen if on one
-			if (currentItem?.type === "welcome") {
-				setCurrentIndex((prev) => prev + 1);
-			}
 		} catch (error) {
 			onError?.(error as Error);
 		}
-	}, [client, sessionId, currentItem, onError]);
+	}, [client, sessionId, onError]);
 
 	// Validate current field (pendingValue allows validating before state updates)
 	const validateCurrentWithValue = useCallback((pendingValue?: FieldAnswer): boolean => {
@@ -414,12 +396,12 @@ export function useForm(options: UseFormOptions): UseFormReturn {
 		setIsSubmitting(false);
 	}, [initialAnswers]);
 
-	// Auto-start if no welcome screens
+	// Auto-start immediately
 	useEffect(() => {
-		if (content.welcomeScreens.length === 0 && !isStarted) {
+		if (!isStarted) {
 			start();
 		}
-	}, [content.welcomeScreens.length, isStarted, start]);
+	}, [isStarted, start]);
 
 	return {
 		// State
@@ -443,7 +425,6 @@ export function useForm(options: UseFormOptions): UseFormReturn {
 		progress,
 		canGoBack,
 		canGoNext,
-		isOnWelcome,
 		isOnField,
 		isOnCustomScreen,
 

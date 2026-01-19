@@ -8,7 +8,6 @@
 
 export interface FormContent {
 	schemaVersion: number;
-	welcomeScreens: WelcomeScreen[];
 	fields: FormField[];
 	branching: FieldBranching[];
 	logic: LogicRule[];
@@ -17,28 +16,6 @@ export interface FormContent {
 	/** Custom screens inserted between fields */
 	customScreens?: CustomScreen[];
 }
-
-// ============================================================================
-// Screens
-// ============================================================================
-
-export interface WelcomeScreen {
-	ref: string;
-	title: string;
-	properties: {
-		description?: string;
-		buttonText?: string;
-		showButton: boolean;
-		/** Subtitle shown below main title (e.g., "5-MINUTE TEST") */
-		subtitle?: string;
-	};
-	attachment?: Attachment;
-	layout?: Layout;
-	position?: Position;
-	/** Multiple images for side content in split layouts */
-	sideImages?: Attachment[];
-}
-
 
 // ============================================================================
 // Fields
@@ -1080,7 +1057,6 @@ export interface FieldState {
 }
 
 export type ScreenItem =
-	| { type: "welcome"; screen: WelcomeScreen }
 	| { type: "field"; field: FormField; index: number }
 	| { type: "custom"; screen: CustomScreen }
 	| {

@@ -1,6 +1,3 @@
-export { WelcomeScreen } from "./WelcomeScreen";
-export type { WelcomeScreenProps } from "./WelcomeScreen";
-
 export { ClosedScreen } from "./ClosedScreen";
 export type { ClosedScreenProps } from "./ClosedScreen";
 

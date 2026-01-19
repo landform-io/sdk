@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { FormProvider, useFormContext } from "./FormProvider";
 import { useTheme, useThemeContext } from "../hooks/useTheme";
 import { useScreenTransition } from "../hooks/useScreenTransition";
-import { WelcomeScreen } from "./screens/WelcomeScreen";
 import { CustomScreenRenderer } from "./screens/CustomScreenRenderer";
 import { UserTemplateScreen } from "./screens/UserTemplateScreen";
 import { FieldRenderer } from "./fields/FieldRenderer";
@@ -52,7 +51,6 @@ function FormRendererInner({ className, theme, turnstileSiteKey }: FormRendererI
 		showCaptcha,
 		setCaptchaToken,
 		submit,
-		start,
 		next,
 		answers,
 		errors,
@@ -242,10 +240,6 @@ function FormRendererInner({ className, theme, turnstileSiteKey }: FormRendererI
 						...(!hasConsent && { opacity: 0.3, pointerEvents: "none" }),
 					}}
 				>
-					{currentItem.type === "welcome" && (
-						<WelcomeScreen screen={currentItem.screen} onStart={start} />
-					)}
-
 					{currentItem.type === "field" && (
 						theme?.questionPageTemplate ? (
 							<QuestionTemplateWrapper

@@ -29,9 +29,8 @@ export function useProgress(options: UseProgressOptions): UseProgressReturn {
 		const totalFields = content.fields.length;
 		const answeredCount = Object.keys(answers).length;
 
-		// Calculate current field index (accounting for welcome screens)
-		const welcomeCount = content.welcomeScreens.length;
-		const currentFieldIndex = Math.max(0, currentIndex - welcomeCount);
+		// Calculate current field index
+		const currentFieldIndex = Math.max(0, currentIndex);
 
 		const percentage = totalFields > 0 ? (answeredCount / totalFields) * 100 : 0;
 

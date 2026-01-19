@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useRef, useId } from "react";
-import DOMPurify from "dompurify";
+import DOMPurify from "isomorphic-dompurify";
 import type { QuestionPageTemplate } from "../../types";
 import {
 	parseActionFromElement,
