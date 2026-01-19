@@ -63,30 +63,32 @@ function FormRendererInner({ className, theme, turnstileSiteKey }: FormRendererI
 		canGoNext,
 	} = useFormContext();
 
-	const { backgroundStyle } = useTheme({ theme });
+	// Get theme from context (which has default variables injected by FormProvider)
+	const themeFromContext = useThemeContext();
+	const { backgroundStyle } = useTheme({ theme: themeFromContext });
 
 	// Read display settings from theme variables (with fallback defaults)
-	const showNavigationArrows = getThemeVariableValue(theme?.variables, "showNavigationArrows", true);
-	const showKeyHintOnChoices = getThemeVariableValue(theme?.variables, "showKeyHintOnChoices", true);
+	const showNavigationArrows = getThemeVariableValue(themeFromContext?.variables, "showNavigationArrows", true);
+	const showKeyHintOnChoices = getThemeVariableValue(themeFromContext?.variables, "showKeyHintOnChoices", true);
 
 	// Screen transitions
 	const { transitionClass, isTransitioning, transitionStyle, shouldStagger } =
 		useScreenTransition({
-			transitions: theme?.screenTransitions,
+			transitions: themeFromContext?.screenTransitions,
 			currentIndex,
 		});
 
 	// Get layout class from component variants
-	const layoutClass = theme?.componentVariants?.layout
-		? `lf-layout-${theme.componentVariants.layout}`
+	const layoutClass = themeFromContext?.componentVariants?.layout
+		? `lf-layout-${themeFromContext.componentVariants.layout}`
 		: "lf-layout-default";
 
 	// Get input/button style classes
-	const inputStyleClass = theme?.componentVariants?.inputStyle
-		? `lf-input-style-${theme.componentVariants.inputStyle}`
+	const inputStyleClass = themeFromContext?.componentVariants?.inputStyle
+		? `lf-input-style-${themeFromContext.componentVariants.inputStyle}`
 		: "";
-	const buttonStyleClass = theme?.componentVariants?.buttonStyle
-		? `lf-button-style-${theme.componentVariants.buttonStyle}`
+	const buttonStyleClass = themeFromContext?.componentVariants?.buttonStyle
+		? `lf-button-style-${themeFromContext.componentVariants.buttonStyle}`
 		: "";
 
 	// Cookie consent state
@@ -243,19 +245,19 @@ function FormRendererInner({ className, theme, turnstileSiteKey }: FormRendererI
 				<div
 					className={`lf-question-container lf-screen-content ${shouldStagger ? "lf-stagger-children" : ""}`}
 					style={{
-						...(theme?.componentVariants?.containerMaxWidth && {
-							maxWidth: theme.componentVariants.containerMaxWidth,
+						...(themeFromContext?.componentVariants?.containerMaxWidth && {
+							maxWidth: themeFromContext.componentVariants.containerMaxWidth,
 						}),
 						...(!hasConsent && { opacity: 0.3, pointerEvents: "none" }),
 					}}
 				>
 					{currentItem.type === "field" && (
-						theme?.questionPageTemplate ? (
+						themeFromContext?.questionPageTemplate ? (
 							<QuestionTemplateWrapper
-								template={theme.questionPageTemplate}
+								template={themeFromContext.questionPageTemplate}
 								onNext={next}
 								onBack={previous}
-								variables={theme.variables}
+								variables={themeFromContext.variables}
 								runtimeContext={{
 									progress,
 									questionNumber: currentItem.index + 1,
@@ -294,7 +296,7 @@ function FormRendererInner({ className, theme, turnstileSiteKey }: FormRendererI
 					{currentItem.type === "custom" && (
 						<CustomScreenRenderer
 							screen={currentItem.screen}
-							theme={theme}
+							theme={themeFromContext}
 							progress={progress / 100}
 							onNext={next}
 						/>
@@ -306,7 +308,7 @@ function FormRendererInner({ className, theme, turnstileSiteKey }: FormRendererI
 							template={currentItem.template}
 							onNext={next}
 							onBack={previous}
-							variables={theme?.variables}
+							variables={themeFromContext?.variables}
 							runtimeContext={{
 								progress,
 								questionNumber: currentIndex + 1,
@@ -320,7 +322,7 @@ function FormRendererInner({ className, theme, turnstileSiteKey }: FormRendererI
 			</div>
 
 			{/* Navigation - disabled during transitions, hidden when using custom question template */}
-			{showNavigationArrows && isStarted && currentItem.type === "field" && !theme?.questionPageTemplate && (
+			{showNavigationArrows && isStarted && currentItem.type === "field" && !themeFromContext?.questionPageTemplate && (
 				<NavigationControls disabled={isTransitioning} />
 			)}
 

@@ -272,3 +272,97 @@ export function getThemeVariableValue<T extends string | number | boolean>(
 	const def = variables?.definitions?.find((d) => d.id === variableId);
 	return (def?.defaultValue as T) ?? fallback;
 }
+
+/**
+ * Default Typeform-style question page template
+ * Uses Liquid syntax for conditional rendering based on theme variables
+ */
+export const DEFAULT_QUESTION_PAGE_TEMPLATE = {
+	html: `<div class="lf-question-wrapper{% if contentAlignment == 'center' %} lf-align-center{% elsif contentAlignment == 'right' %} lf-align-right{% endif %}">
+  <div class="lf-question-content lf-fade-in">
+    {{field}}
+  </div>
+  {% if showOkButton != false %}
+  <div class="lf-question-footer lf-fade-in lf-fade-delay-1">
+    <button class="lf-button lf-button-typeform" data-lf-action="next">
+      OK
+    </button>
+    {% if showKeyboardHint != false %}
+    <span class="lf-key-hint-inline">press <kbd>Enter</kbd> <span class="lf-enter-icon">\u21b5</span></span>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>`,
+	css: `.lf-question-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lf-spacing-question, 24px);
+  width: 100%;
+  max-width: {{ containerMaxWidth | default: "720px" }};
+  text-align: {{ contentAlignment | default: "left" }};
+}
+
+.lf-question-wrapper.lf-align-center {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.lf-question-wrapper.lf-align-right {
+  margin-left: auto;
+}
+
+.lf-question-content {
+  flex: 1;
+}
+
+.lf-question-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.lf-button-typeform {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  font-family: var(--lf-font-button);
+  font-size: var(--lf-font-size-button);
+  font-weight: 700;
+  color: var(--lf-color-button-text);
+  background-color: var(--lf-color-button-bg);
+  border: none;
+  border-radius: var(--lf-border-radius);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.lf-button-typeform:hover {
+  background-color: var(--lf-color-button-hover);
+}
+
+.lf-key-hint-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--lf-color-primary);
+  font-weight: 500;
+}
+
+.lf-key-hint-inline kbd {
+  font-family: inherit;
+  font-weight: 700;
+}
+
+.lf-enter-icon {
+  font-size: 16px;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .lf-key-hint-inline {
+    display: none;
+  }
+}`,
+};

@@ -157,5 +157,16 @@ export {
 	parseActionFromElement,
 } from "./actions";
 export type { ActionDefinition, LfAction, ParsedAction } from "./actions";
+// Liquid template utilities
+export {
+	buildTemplateContext,
+	createDefaultThemeVariables,
+	DEFAULT_QUESTION_PAGE_TEMPLATE,
+	DEFAULT_THEME_VARIABLE_DEFINITIONS,
+	getThemeVariableValue,
+	getVariableValues,
+	processTemplate,
+	processTemplateSync,
+} from "./utils/liquid";
 // Types
 export * from "./types";

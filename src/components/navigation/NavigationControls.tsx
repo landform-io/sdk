@@ -1,6 +1,7 @@
 import React from "react";
 import { useFormContext } from "../FormProvider";
 import { useThemeContext } from "../../hooks/useTheme";
+import { getThemeVariableValue } from "../../utils/liquid";
 
 export interface NavigationControlsProps {
 	onNext?: () => void;
@@ -28,6 +29,9 @@ export function NavigationControls({ onNext, onPrevious, disabled = false }: Nav
 
 	const confirmText = settings.systemMessages?.confirmButtonText || "OK";
 	const enterHint = settings.systemMessages?.pressEnterText || "press Enter";
+
+	// Read showKeyboardHint from theme variables (defaults to true)
+	const showKeyboardHint = getThemeVariableValue(theme?.variables, "showKeyboardHint", true);
 
 	const isBottomBar = theme.componentVariants?.navigationLayout === "bottom-bar";
 
@@ -112,15 +116,17 @@ export function NavigationControls({ onNext, onPrevious, disabled = false }: Nav
 				disabled={isDisabled}
 			>
 				{confirmText}
-				<span
-					style={{
-						opacity: 0.7,
-						fontSize: "0.75rem",
-						marginLeft: "0.5rem",
-					}}
-				>
-					{enterHint} ↵
-				</span>
+				{showKeyboardHint && (
+					<span
+						style={{
+							opacity: 0.7,
+							fontSize: "0.75rem",
+							marginLeft: "0.5rem",
+						}}
+					>
+						{enterHint} ↵
+					</span>
+				)}
 			</button>
 
 			<button

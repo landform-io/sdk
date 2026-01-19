@@ -658,6 +658,220 @@ export function generateComponentStyles(): string {
 	font-size: 0.875rem;
 	color: var(--lf-color-placeholder);
 }
+
+/* ============================================================================
+   Typeform-style Field Container
+   ============================================================================ */
+
+.lf-field-container {
+	display: flex;
+	flex-direction: column;
+	gap: var(--lf-spacing-question);
+	animation: lf-field-fade-in 0.4s ease-out;
+}
+
+.lf-field-header {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.lf-field-input {
+	margin-top: 0.5rem;
+}
+
+/* Question header layout */
+.lf-question-header {
+	text-align: left;
+}
+
+/* Question number badge (Typeform style) */
+.lf-question-number-badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 1.5rem;
+	height: 1.5rem;
+	padding: 0 0.375rem;
+	margin-right: 0.5rem;
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: var(--lf-color-button-text);
+	background-color: var(--lf-color-primary);
+	border-radius: 4px;
+	vertical-align: middle;
+}
+
+.lf-question-title-text {
+	vertical-align: middle;
+}
+
+/* ============================================================================
+   Typeform-style Footer
+   ============================================================================ */
+
+.lf-footer {
+	background: transparent;
+}
+
+/* Navigation arrows container (Typeform style: joined buttons) */
+.lf-nav-arrows {
+	display: flex;
+	overflow: hidden;
+	border-radius: var(--lf-border-radius);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.lf-nav-arrow {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 36px;
+	background-color: var(--lf-color-button-bg);
+	color: var(--lf-color-button-text);
+	border: none;
+	cursor: pointer;
+	transition: background-color 0.15s ease;
+}
+
+.lf-nav-arrow:hover:not(:disabled) {
+	background-color: var(--lf-color-button-hover);
+}
+
+.lf-nav-arrow:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
+.lf-nav-arrow-up {
+	border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Powered by badge (Typeform style) */
+.lf-powered-by {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	padding: 8px 16px;
+	background-color: var(--lf-color-button-bg);
+	color: var(--lf-color-button-text);
+	font-size: 13px;
+	font-weight: 400;
+	text-decoration: none;
+	border-radius: var(--lf-border-radius);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	transition: background-color 0.15s ease;
+}
+
+.lf-powered-by:hover {
+	background-color: var(--lf-color-button-hover);
+}
+
+.lf-powered-by strong {
+	font-weight: 700;
+}
+
+/* ============================================================================
+   Typeform-style Underline Input
+   ============================================================================ */
+
+.lf-input-typeform {
+	width: 100%;
+	padding: 12px 0;
+	font-family: var(--lf-font-answer);
+	font-size: var(--lf-font-size-answer);
+	color: var(--lf-color-answer);
+	background: transparent;
+	border: none;
+	border-bottom: 2px solid var(--lf-color-input-border);
+	outline: none;
+	transition: border-color 0.2s ease;
+}
+
+.lf-input-typeform::placeholder {
+	color: var(--lf-color-placeholder);
+}
+
+.lf-input-typeform:focus {
+	border-bottom-color: var(--lf-color-primary);
+}
+
+/* Typeform-style OK button */
+.lf-button-typeform {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 10px 20px;
+	font-family: var(--lf-font-button);
+	font-size: var(--lf-font-size-button);
+	font-weight: 700;
+	color: var(--lf-color-button-text);
+	background-color: var(--lf-color-button-bg);
+	border: none;
+	border-radius: var(--lf-border-radius);
+	cursor: pointer;
+	transition: all 0.15s ease;
+}
+
+.lf-button-typeform:hover {
+	background-color: var(--lf-color-button-hover);
+	transform: translateY(-1px);
+}
+
+.lf-button-typeform:active {
+	transform: translateY(0);
+}
+
+/* Inline keyboard hint (Typeform style: next to button) */
+.lf-key-hint-inline {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 14px;
+	color: var(--lf-color-primary);
+	font-weight: 500;
+}
+
+.lf-key-hint-inline kbd {
+	font-family: inherit;
+	font-weight: 700;
+}
+
+.lf-enter-icon {
+	font-size: 16px;
+}
+
+/* Hide keyboard hint on touch devices */
+@media (hover: none) and (pointer: coarse) {
+	.lf-key-hint-inline {
+		display: none;
+	}
+}
+
+/* ============================================================================
+   Typeform-style Animations
+   ============================================================================ */
+
+@keyframes lf-field-fade-in {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+	.lf-field-container,
+	.lf-question-wrapper,
+	.lf-fade-in {
+		animation: none;
+	}
+}
 `.trim();
 }
 

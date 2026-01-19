@@ -1,11 +1,13 @@
 /**
- * QuestionHeader - Unified question header component
+ * QuestionHeader - Typeform-style question header component
  *
- * Displays question title, description, and required indicator
+ * Displays question number badge, title, description, and required indicator
+ * Layout: [number badge] Question title
  */
 
+import { useContext } from "react";
 import type { FormField } from "../../../types";
-import { useThemeContext } from "../../../hooks/useTheme";
+import { ThemeContext } from "../../../hooks/useTheme";
 import { getThemeVariableValue } from "../../../utils/liquid";
 
 interface QuestionHeaderProps {
@@ -17,30 +19,28 @@ export function QuestionHeader({
 	field,
 	questionNumber,
 }: QuestionHeaderProps) {
-	const theme = useThemeContext();
+	// Use context directly instead of useThemeContext to avoid throwing
+	const theme = useContext(ThemeContext);
 
 	// Read showQuestionNumber from theme variables (defaults to true)
-	const showQuestionNumber = getThemeVariableValue(theme.variables, "showQuestionNumber", true);
-
-	const questionTitle = showQuestionNumber && questionNumber
-		? `${questionNumber} → ${field.title}`
-		: field.title;
+	// If theme or variables is undefined, default to showing the number
+	const showQuestionNumber = getThemeVariableValue(theme?.variables, "showQuestionNumber", true);
 
 	return (
-		<div>
-			{showQuestionNumber && questionNumber && (
-				<span className="lf-question-description text-sm font-medium">
-					{questionNumber}
-				</span>
-			)}
+		<div className="lf-question-header">
 			<h4 className="lf-question-title">
-				{questionTitle}
-				{field.validations?.required && (
-					<span className="lf-required inline ml-1">*</span>
+				{showQuestionNumber && questionNumber && (
+					<span className="lf-question-number-badge">{questionNumber}</span>
 				)}
+				<span className="lf-question-title-text">
+					{field.title}
+					{field.validations?.required && (
+						<span className="lf-required">*</span>
+					)}
+				</span>
 			</h4>
 			{field.description && (
-				<p className="lf-question-description mt-2">{field.description}</p>
+				<p className="lf-question-description">{field.description}</p>
 			)}
 		</div>
 	);

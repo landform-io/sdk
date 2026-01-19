@@ -1,4 +1,5 @@
-import React, { useMemo, useEffect, useRef, useId } from "react";
+import React, { useMemo, useEffect, useRef, useId, useState } from "react";
+import { createPortal } from "react-dom";
 import DOMPurify from "isomorphic-dompurify";
 import type { QuestionPageTemplate, ThemeVariables } from "../../types";
 import {
@@ -155,7 +156,6 @@ export function QuestionTemplateWrapper({
 }: QuestionTemplateWrapperProps) {
 	const uniqueId = useId();
 	const scopeId = `qt-${uniqueId.replace(/:/g, "")}`;
-	const fieldContainerRef = useRef<HTMLDivElement | null>(null);
 
 	// Build template context from variables and runtime data
 	const templateContext = useMemo(
@@ -222,8 +222,8 @@ export function QuestionTemplateWrapper({
 	const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
 		const target = e.target as HTMLElement;
 
-		// Don't intercept clicks on the field content itself
-		if (fieldContainerRef.current?.contains(target)) {
+		// Don't intercept clicks on the field content itself (inside the portal)
+		if (target.closest(".lf-question-field-container")) {
 			return;
 		}
 
@@ -234,8 +234,8 @@ export function QuestionTemplateWrapper({
 			target.closest(".lf-button");
 
 		if (actionElement) {
-			// Don't process if it's inside the field container
-			if (fieldContainerRef.current?.contains(actionElement as Node)) {
+			// Don't process if it's inside the field container (portal content)
+			if (actionElement.closest(".lf-question-field-container")) {
 				return;
 			}
 
@@ -299,53 +299,70 @@ export function QuestionTemplateWrapper({
 			<TemplateContent
 				html={sanitizedHtml}
 				fieldContent={children}
-				fieldContainerRef={fieldContainerRef}
 			/>
 		</div>
 	);
 }
 
 /**
- * Component that renders the template HTML and injects the field at the placeholder
+ * Memoized HTML container that only re-renders when html changes
+ * This prevents React from recreating DOM nodes when other state changes
+ */
+const HtmlContainer = React.memo(function HtmlContainer({
+	html,
+	onMount,
+}: {
+	html: string;
+	onMount: (container: HTMLDivElement) => void;
+}) {
+	const containerRef = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		if (containerRef.current) {
+			onMount(containerRef.current);
+		}
+	}, [html, onMount]);
+
+	return (
+		<div
+			ref={containerRef}
+			// biome-ignore lint/security/noDangerouslySetInnerHtml: Content is sanitized via DOMPurify
+			dangerouslySetInnerHTML={{ __html: html }}
+		/>
+	);
+});
+
+/**
+ * Component that renders the template HTML and injects the field at the placeholder using React Portal
  */
 function TemplateContent({
 	html,
 	fieldContent,
-	fieldContainerRef,
 }: {
 	html: string;
 	fieldContent: React.ReactNode;
-	fieldContainerRef: React.RefObject<HTMLDivElement | null>;
 }) {
-	const containerRef = useRef<HTMLDivElement>(null);
+	const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
 
-	// After the HTML is rendered, find the placeholder and inject a portal target
-	useEffect(() => {
-		if (!containerRef.current) return;
-
-		const placeholder = containerRef.current.querySelector(`#${FIELD_MARKER_ID}`);
-		if (placeholder && fieldContainerRef.current) {
-			// Move the field container into the placeholder position
-			placeholder.replaceWith(fieldContainerRef.current);
+	// Callback to find and set the portal target when HTML container mounts
+	const handleMount = React.useCallback((container: HTMLDivElement) => {
+		const placeholder = container.querySelector(`#${FIELD_MARKER_ID}`);
+		if (placeholder instanceof HTMLElement) {
+			setPortalTarget(placeholder);
 		}
-	}, [html, fieldContainerRef]);
+	}, []);
 
 	return (
 		<>
-			{/* Render the template HTML */}
-			<div
-				ref={containerRef}
-				// biome-ignore lint/security/noDangerouslySetInnerHtml: Content is sanitized via DOMPurify
-				dangerouslySetInnerHTML={{ __html: html }}
-			/>
-			{/* Hidden container for the field that will be moved into the template */}
-			<div
-				ref={fieldContainerRef}
-				className="lf-question-field-container"
-				style={{ display: "contents" }}
-			>
-				{fieldContent}
-			</div>
+			{/* Render the template HTML (memoized to preserve DOM) */}
+			<HtmlContainer html={html} onMount={handleMount} />
+			{/* Render field content into the placeholder via React Portal */}
+			{portalTarget && createPortal(
+				<div className="lf-question-field-container" style={{ display: "contents" }}>
+					{fieldContent}
+				</div>,
+				portalTarget
+			)}
 		</>
 	);
 }
