@@ -1,12 +1,18 @@
 import React, { useMemo } from "react";
 import { useFormContext } from "../FormProvider";
+import { useThemeContext } from "../../hooks/useTheme";
+import { getThemeVariableValue } from "../../utils/liquid";
 import { calculateRemainingTime, formatTimeEstimate } from "../../utils/timeEstimate";
 
 export function TimeToComplete() {
-	const { content, settings, answers, isStarted, isCompleted } = useFormContext();
+	const { content, answers, isStarted, isCompleted } = useFormContext();
+	const theme = useThemeContext();
+
+	// Read showTimeToComplete from theme variables (defaults to false)
+	const showTimeToComplete = getThemeVariableValue(theme.variables, "showTimeToComplete", false);
 
 	// Don't show if setting is disabled
-	if (!settings.showTimeToComplete) {
+	if (!showTimeToComplete) {
 		return null;
 	}
 

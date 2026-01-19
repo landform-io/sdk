@@ -1,11 +1,16 @@
 import React, { useMemo, useEffect, useRef, useId } from "react";
 import DOMPurify from "isomorphic-dompurify";
-import type { QuestionPageTemplate } from "../../types";
+import type { QuestionPageTemplate, ThemeVariables } from "../../types";
 import {
 	parseActionFromElement,
 	type ParsedAction,
 	LF_ACTIONS,
 } from "../../actions";
+import {
+	processTemplateSync,
+	buildTemplateContext,
+	type TemplateContext,
+} from "../../utils/liquid";
 
 export interface QuestionTemplateWrapperProps {
 	/** The template configuration */
@@ -18,6 +23,10 @@ export interface QuestionTemplateWrapperProps {
 	onSubmit?: () => void;
 	onGoto?: (screenId: string) => void;
 	onRestart?: () => void;
+	/** Theme variables for template processing */
+	variables?: ThemeVariables;
+	/** Runtime context for template (progress, question number, etc.) */
+	runtimeContext?: Partial<TemplateContext>;
 }
 
 /**
@@ -141,29 +150,46 @@ export function QuestionTemplateWrapper({
 	onSubmit,
 	onGoto,
 	onRestart,
+	variables,
+	runtimeContext,
 }: QuestionTemplateWrapperProps) {
 	const uniqueId = useId();
 	const scopeId = `qt-${uniqueId.replace(/:/g, "")}`;
 	const fieldContainerRef = useRef<HTMLDivElement | null>(null);
 
-	// Replace {{field}} with a placeholder div that we can identify
-	const htmlWithMarker = useMemo(() => {
-		return template.html.replace(
+	// Build template context from variables and runtime data
+	const templateContext = useMemo(
+		() => buildTemplateContext(variables, runtimeContext),
+		[variables, runtimeContext]
+	);
+
+	// Process HTML template with Liquid, then replace {{field}} with marker
+	const processedHtml = useMemo(() => {
+		// First process Liquid syntax (but preserve {{field}} placeholder)
+		// We temporarily replace {{field}} to prevent Liquid from processing it
+		const htmlWithFieldProtected = template.html.replace(
 			FIELD_PLACEHOLDER,
+			"__FIELD_PLACEHOLDER__"
+		);
+		const liquidProcessed = processTemplateSync(htmlWithFieldProtected, templateContext);
+		// Restore {{field}} placeholder and replace with marker div
+		return liquidProcessed.replace(
+			"__FIELD_PLACEHOLDER__",
 			`<div id="${FIELD_MARKER_ID}"></div>`
 		);
-	}, [template.html]);
+	}, [template.html, templateContext]);
 
 	// Sanitize the HTML
 	const sanitizedHtml = useMemo(() => {
-		return sanitizeHtml(htmlWithMarker);
-	}, [htmlWithMarker]);
+		return sanitizeHtml(processedHtml);
+	}, [processedHtml]);
 
-	// Scope the CSS
-	const scopedCss = useMemo(
-		() => scopeCss(template.css || "", scopeId),
-		[template.css, scopeId]
-	);
+	// Process CSS template with Liquid, then scope it
+	const scopedCss = useMemo(() => {
+		if (!template.css) return "";
+		const processedCss = processTemplateSync(template.css, templateContext);
+		return scopeCss(processedCss, scopeId);
+	}, [template.css, templateContext, scopeId]);
 
 	// Handle action execution
 	const executeAction = (action: ParsedAction) => {

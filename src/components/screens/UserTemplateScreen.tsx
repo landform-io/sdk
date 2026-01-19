@@ -5,7 +5,16 @@ import {
 	type ParsedAction,
 	parseActionFromElement,
 } from "../../actions";
-import type { CustomPageTemplate, UserDefinedScreen } from "../../types";
+import type {
+	CustomPageTemplate,
+	ThemeVariables,
+	UserDefinedScreen,
+} from "../../types";
+import {
+	buildTemplateContext,
+	processTemplateSync,
+	type TemplateContext,
+} from "../../utils/liquid";
 
 export interface UserTemplateScreenProps {
 	screen: UserDefinedScreen;
@@ -15,28 +24,10 @@ export interface UserTemplateScreenProps {
 	onSubmit?: () => void;
 	onGoto?: (screenId: string) => void;
 	onRestart?: () => void;
-}
-
-/**
- * Interpolates template variables in HTML
- */
-function interpolateTemplate(
-	html: string,
-	fieldValues: Record<string, string | boolean | number>,
-): string {
-	return html.replace(/\{\{(\w+)\}\}/g, (match, fieldId) => {
-		const value = fieldValues[fieldId];
-		if (value !== undefined) {
-			// Escape HTML special characters for non-HTML content
-			return String(value)
-				.replace(/&/g, "&amp;")
-				.replace(/</g, "&lt;")
-				.replace(/>/g, "&gt;")
-				.replace(/"/g, "&quot;")
-				.replace(/'/g, "&#039;");
-		}
-		return match;
-	});
+	/** Theme variables for template processing */
+	variables?: ThemeVariables;
+	/** Runtime context for template (progress, etc.) */
+	runtimeContext?: Partial<TemplateContext>;
 }
 
 /**
@@ -104,7 +95,9 @@ const DOMPURIFY_CONFIG = {
 };
 
 // Lazy-loaded DOMPurify instance (browser only)
-let domPurifyInstance: typeof import("dompurify") | null = null;
+let domPurifyInstance: {
+	sanitize: (html: string, config?: object) => string;
+} | null = null;
 let domPurifyLoading: Promise<void> | null = null;
 
 async function loadDOMPurify(): Promise<void> {
@@ -123,7 +116,7 @@ async function loadDOMPurify(): Promise<void> {
  * On SSR or before DOMPurify loads, returns raw HTML
  */
 function sanitizeHtml(html: string): string {
-	if (!domPurifyInstance?.sanitize) {
+	if (!domPurifyInstance) {
 		return html;
 	}
 	return domPurifyInstance.sanitize(html, DOMPURIFY_CONFIG);
@@ -171,6 +164,8 @@ export function UserTemplateScreen({
 	onSubmit,
 	onGoto,
 	onRestart,
+	variables,
+	runtimeContext,
 }: UserTemplateScreenProps) {
 	const styleRef = useRef<HTMLStyleElement | null>(null);
 	const scriptRef = useRef<HTMLScriptElement | null>(null);
@@ -183,7 +178,7 @@ export function UserTemplateScreen({
 		}
 	}, [purifyLoaded]);
 
-	// Build field values with defaults
+	// Build field values with defaults from template fields
 	const fieldValues = useMemo(() => {
 		const values: Record<string, string | boolean | number> = {};
 
@@ -202,17 +197,29 @@ export function UserTemplateScreen({
 		return values;
 	}, [template.fields, screen.fieldValues]);
 
-	// Interpolate and sanitize HTML (re-sanitize when DOMPurify loads)
-	const sanitizedHtml = useMemo(() => {
-		const interpolated = interpolateTemplate(template.html, fieldValues);
-		return sanitizeHtml(interpolated);
-	}, [template.html, fieldValues, purifyLoaded]);
+	// Build template context combining theme variables, runtime context, and field values
+	const templateContext = useMemo(() => {
+		const baseContext = buildTemplateContext(variables, runtimeContext);
+		// Add field values to context (field values take precedence)
+		return {
+			...baseContext,
+			...fieldValues,
+		};
+	}, [variables, runtimeContext, fieldValues]);
 
-	// Scope and inject CSS
-	const scopedCss = useMemo(
-		() => scopeCss(template.css || "", template.id),
-		[template.css, template.id],
-	);
+	// Process HTML with Liquid and sanitize (re-sanitize when DOMPurify loads)
+	const sanitizedHtml = useMemo(() => {
+		// Process with LiquidJS
+		const processed = processTemplateSync(template.html, templateContext);
+		return sanitizeHtml(processed);
+	}, [template.html, templateContext, purifyLoaded]);
+
+	// Process CSS with Liquid and scope it
+	const scopedCss = useMemo(() => {
+		if (!template.css) return "";
+		const processedCss = processTemplateSync(template.css, templateContext);
+		return scopeCss(processedCss, template.id);
+	}, [template.css, templateContext, template.id]);
 
 	// Inject scoped CSS
 	useEffect(() => {

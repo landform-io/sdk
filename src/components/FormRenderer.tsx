@@ -14,6 +14,7 @@ import { Branding } from "./layout/Branding";
 import { Header } from "./layout/Header";
 import { QuestionTemplateWrapper } from "./layout/QuestionTemplateWrapper";
 import { hasCookieConsent } from "../utils/storage";
+import { getThemeVariableValue } from "../utils/liquid";
 import type { UseFormOptions } from "../hooks/useForm";
 
 export interface FormRendererProps extends UseFormOptions {
@@ -52,13 +53,21 @@ function FormRendererInner({ className, theme, turnstileSiteKey }: FormRendererI
 		setCaptchaToken,
 		submit,
 		next,
+		previous,
 		answers,
 		errors,
 		setAnswer,
 		progress,
+		content,
+		canGoBack,
+		canGoNext,
 	} = useFormContext();
 
 	const { backgroundStyle } = useTheme({ theme });
+
+	// Read display settings from theme variables (with fallback defaults)
+	const showNavigationArrows = getThemeVariableValue(theme?.variables, "showNavigationArrows", true);
+	const showKeyHintOnChoices = getThemeVariableValue(theme?.variables, "showKeyHintOnChoices", true);
 
 	// Screen transitions
 	const { transitionClass, isTransitioning, transitionStyle, shouldStagger } =
@@ -245,6 +254,17 @@ function FormRendererInner({ className, theme, turnstileSiteKey }: FormRendererI
 							<QuestionTemplateWrapper
 								template={theme.questionPageTemplate}
 								onNext={next}
+								onBack={previous}
+								variables={theme.variables}
+								runtimeContext={{
+									progress,
+									questionNumber: currentItem.index + 1,
+									totalQuestions: content.fields.length,
+									canGoBack,
+									canGoNext,
+									fieldType: currentItem.field.type,
+									isRequired: currentItem.field.validations?.required ?? false,
+								}}
 							>
 								<FieldRenderer
 									field={currentItem.field}
@@ -253,8 +273,7 @@ function FormRendererInner({ className, theme, turnstileSiteKey }: FormRendererI
 									onChange={(value) => setAnswer(currentItem.field.ref, value)}
 									onNext={next}
 									questionNumber={currentItem.index + 1}
-									showQuestionNumber={settings.showQuestionNumber}
-									showKeyHints={settings.showKeyHintOnChoices}
+									showKeyHints={showKeyHintOnChoices}
 									systemMessages={settings.systemMessages}
 								/>
 							</QuestionTemplateWrapper>
@@ -266,8 +285,7 @@ function FormRendererInner({ className, theme, turnstileSiteKey }: FormRendererI
 								onChange={(value) => setAnswer(currentItem.field.ref, value)}
 								onNext={next}
 								questionNumber={currentItem.index + 1}
-								showQuestionNumber={settings.showQuestionNumber}
-								showKeyHints={settings.showKeyHintOnChoices}
+								showKeyHints={showKeyHintOnChoices}
 								systemMessages={settings.systemMessages}
 							/>
 						)
@@ -287,13 +305,22 @@ function FormRendererInner({ className, theme, turnstileSiteKey }: FormRendererI
 							screen={currentItem.screen}
 							template={currentItem.template}
 							onNext={next}
+							onBack={previous}
+							variables={theme?.variables}
+							runtimeContext={{
+								progress,
+								questionNumber: currentIndex + 1,
+								totalQuestions: content.fields.length,
+								canGoBack,
+								canGoNext,
+							}}
 						/>
 					)}
 				</div>
 			</div>
 
-			{/* Navigation - disabled during transitions */}
-			{!settings.hideNavigation && isStarted && currentItem.type === "field" && (
+			{/* Navigation - disabled during transitions, hidden when using custom question template */}
+			{showNavigationArrows && isStarted && currentItem.type === "field" && !theme?.questionPageTemplate && (
 				<NavigationControls disabled={isTransitioning} />
 			)}
 

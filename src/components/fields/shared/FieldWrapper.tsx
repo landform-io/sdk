@@ -11,14 +11,12 @@ import { QuestionHeader } from "./QuestionHeader";
 interface FieldWrapperProps {
 	field: FormField;
 	questionNumber?: number;
-	showQuestionNumber?: boolean;
 	children: ReactNode;
 }
 
 export function FieldWrapper({
 	field,
 	questionNumber,
-	showQuestionNumber = false,
 	children,
 }: FieldWrapperProps) {
 	return (
@@ -26,7 +24,6 @@ export function FieldWrapper({
 			<QuestionHeader
 				field={field}
 				questionNumber={questionNumber}
-				showQuestionNumber={showQuestionNumber}
 			/>
 			{children}
 		</div>

@@ -2,14 +2,18 @@ import React from "react";
 import { useFormContext } from "../FormProvider";
 import { useProgress } from "../../hooks/useProgress";
 import { useThemeContext } from "../../hooks/useTheme";
+import { getThemeVariableValue } from "../../utils/liquid";
 
 export function ProgressBar() {
-	const { content, answers, currentIndex, settings } = useFormContext();
+	const { content, answers, currentIndex } = useFormContext();
 	const theme = useThemeContext();
 	const { percentage, segments } = useProgress({ content, answers, currentIndex });
 
-	// Check both settings.showProgressBar AND theme.progressBar.enabled
-	if (!settings.showProgressBar || !theme.progressBar.enabled) {
+	// Read showProgressBar from theme variables (defaults to true)
+	const showProgressBar = getThemeVariableValue(theme.variables, "showProgressBar", true);
+
+	// Check both theme variable AND theme.progressBar.enabled
+	if (!showProgressBar || !theme.progressBar.enabled) {
 		return null;
 	}
 

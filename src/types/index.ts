@@ -720,6 +720,50 @@ export interface QuestionPageTemplate {
 }
 
 // ============================================================================
+// Theme Variables - Custom settings definable per theme
+// ============================================================================
+
+/** Variable types supported in theme templates */
+export type ThemeVariableType = "text" | "number" | "boolean" | "color" | "select";
+
+/** Option for select-type variables */
+export interface ThemeVariableOption {
+	label: string;
+	value: string;
+}
+
+/**
+ * Definition of a custom theme variable
+ * These can be referenced in templates using Liquid syntax: {{ variableName }}
+ */
+export interface ThemeVariableDefinition {
+	/** Unique identifier for the variable (used in templates) */
+	id: string;
+	/** Display label in the editor */
+	label: string;
+	/** Variable type */
+	type: ThemeVariableType;
+	/** Default value */
+	defaultValue: string | number | boolean;
+	/** Description/help text */
+	description?: string;
+	/** Options for select type */
+	options?: ThemeVariableOption[];
+	/** Category for grouping in UI */
+	category?: string;
+}
+
+/**
+ * Theme variables configuration
+ */
+export interface ThemeVariables {
+	/** Variable definitions (schema) */
+	definitions: ThemeVariableDefinition[];
+	/** Current values for each variable */
+	values: Record<string, string | number | boolean>;
+}
+
+// ============================================================================
 // Custom Screen Templates - SDK-provided, theme-configurable screens
 // ============================================================================
 
@@ -907,6 +951,8 @@ export interface FormTheme {
 	screenTemplates?: ThemeScreenTemplates;
 	/** Question page template for field layout customization */
 	questionPageTemplate?: QuestionPageTemplate;
+	/** Theme variables for template customization */
+	variables?: ThemeVariables;
 }
 
 // ============================================================================
@@ -915,11 +961,6 @@ export interface FormTheme {
 
 export interface FormSettings {
 	isPublic: boolean;
-	showProgressBar: boolean;
-	showTimeToComplete: boolean;
-	showQuestionNumber: boolean;
-	showKeyHintOnChoices: boolean;
-	hideNavigation: boolean;
 	autosaveProgress: boolean;
 	language: string;
 	systemMessages?: {

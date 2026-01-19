@@ -15,7 +15,6 @@ export interface FieldRendererProps {
 	error: string | null;
 	onChange: (value: FieldAnswer) => void;
 	onNext: (pendingValue?: FieldAnswer) => void;
-	showQuestionNumber?: boolean;
 	questionNumber?: number;
 	showKeyHints?: boolean;
 	systemMessages?: FormSettings["systemMessages"];
@@ -29,7 +28,6 @@ export function FieldRenderer({
 	error,
 	onChange,
 	onNext,
-	showQuestionNumber,
 	questionNumber,
 	showKeyHints = true,
 	systemMessages,
@@ -136,7 +134,6 @@ export function FieldRenderer({
 				<FieldWrapper
 					field={field}
 					questionNumber={questionNumber}
-					showQuestionNumber={showQuestionNumber}
 				>
 					{renderField()}
 				</FieldWrapper>
@@ -154,7 +151,6 @@ export function FieldRenderer({
 			<FieldWrapper
 				field={field}
 				questionNumber={questionNumber}
-				showQuestionNumber={showQuestionNumber}
 			>
 				{renderField()}
 			</FieldWrapper>

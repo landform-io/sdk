@@ -5,18 +5,23 @@
  */
 
 import type { FormField } from "../../../types";
+import { useThemeContext } from "../../../hooks/useTheme";
+import { getThemeVariableValue } from "../../../utils/liquid";
 
 interface QuestionHeaderProps {
 	field: FormField;
 	questionNumber?: number;
-	showQuestionNumber?: boolean;
 }
 
 export function QuestionHeader({
 	field,
 	questionNumber,
-	showQuestionNumber = false,
 }: QuestionHeaderProps) {
+	const theme = useThemeContext();
+
+	// Read showQuestionNumber from theme variables (defaults to true)
+	const showQuestionNumber = getThemeVariableValue(theme.variables, "showQuestionNumber", true);
+
 	const questionTitle = showQuestionNumber && questionNumber
 		? `${questionNumber} → ${field.title}`
 		: field.title;
